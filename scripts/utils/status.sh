@@ -122,9 +122,44 @@ if [[ -d "$SNAPSHOT_DIR/works" ]]; then
             if [[ "$GZ_COUNT" -lt "$EXPECTED" ]]; then
                 REMAINING=$((EXPECTED - GZ_COUNT))
                 PCT=$((GZ_COUNT * 100 / EXPECTED))
-                echo -e "${YELLOW}${WARN}${NC} Download incomplete: ${PCT}% ($REMAINING files remaining)"
+
+                # Calculate ETA from download log
+                LOG_FILE="${PROJECT_ROOT}/logs/download.log"
+                if [[ -f "$LOG_FILE" ]]; then
+                    START_TIME=$(head -1 "$LOG_FILE" 2>/dev/null | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' | head -1)
+                    if [[ -n "$START_TIME" ]]; then
+                        START_EPOCH=$(date -d "$START_TIME" +%s 2>/dev/null || echo "")
+                        NOW_EPOCH=$(date +%s)
+                        if [[ -n "$START_EPOCH" ]]; then
+                            ELAPSED_SEC=$((NOW_EPOCH - START_EPOCH))
+                            ELAPSED_HOURS=$((ELAPSED_SEC / 3600))
+                            # Get size in GB
+                            SIZE_GB=$(du -s "$SNAPSHOT_DIR/works" 2>/dev/null | awk '{print int($1/1024/1024)}')
+                            if [[ "$SIZE_GB" -gt 0 ]] && [[ "$ELAPSED_HOURS" -gt 0 ]]; then
+                                RATE=$((SIZE_GB / ELAPSED_HOURS))
+                                if [[ "$RATE" -gt 0 ]]; then
+                                    REMAINING_GB=$((300 - SIZE_GB))
+                                    ETA_HOURS=$((REMAINING_GB / RATE))
+                                    echo -e "${YELLOW}${WARN}${NC} Download incomplete: ${PCT}% ($TOTAL_SIZE / ~300GB)"
+                                    echo -e "${INFO} Rate: ~${RATE} GB/hour, ETA: ~${ETA_HOURS} hours"
+                                else
+                                    echo -e "${YELLOW}${WARN}${NC} Download incomplete: ${PCT}% ($REMAINING files remaining)"
+                                fi
+                            else
+                                echo -e "${YELLOW}${WARN}${NC} Download incomplete: ${PCT}% ($REMAINING files remaining)"
+                            fi
+                        else
+                            echo -e "${YELLOW}${WARN}${NC} Download incomplete: ${PCT}% ($REMAINING files remaining)"
+                        fi
+                    else
+                        echo -e "${YELLOW}${WARN}${NC} Download incomplete: ${PCT}% ($REMAINING files remaining)"
+                    fi
+                else
+                    echo -e "${YELLOW}${WARN}${NC} Download incomplete: ${PCT}% ($REMAINING files remaining)"
+                fi
             elif [[ "$GZ_COUNT" -ge "$EXPECTED" ]]; then
                 echo -e "${GREEN}${CHECK}${NC} Download complete!"
+                echo -e "${INFO} Next step: make build-db"
             fi
         fi
     else
