@@ -72,14 +72,21 @@ openalex-local get 10.1038/nature12373
 ## Comparison with CrossRef Local
 
 | Feature | crossref-local | openalex-local |
-|---------|---------------|----------------|
+|---------|----------------|----------------|
 | Works | 167M | 284M |
 | Abstracts | ~22% | ~70%+ |
+| Update frequency | Real-time | Monthly |
+| DOI authority | ✓ (source) | Uses CrossRef |
 | Citations | Raw references | Linked works |
 | Impact Factor | Calculated | Pre-computed |
-| Concepts | ❌ | ✓ |
+| Concepts/Topics | ❌ | ✓ |
 | Author IDs | ❌ | ✓ |
-| Best for | Citation analysis | Semantic search |
+| Best for | DOI lookup, raw refs | Semantic search |
+
+**When to use CrossRef**: Real-time DOI updates, raw reference parsing, authoritative metadata.
+**When to use OpenAlex**: Semantic search, citation analysis, topic discovery.
+
+See also: [crossref-local](https://github.com/ywatanabe1989/crossref-local)
 
 ## Data Source
 
