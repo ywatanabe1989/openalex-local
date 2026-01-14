@@ -25,6 +25,7 @@ classifiers = [
 keywords = ["openalex", "academic", "research", "abstracts", "semantic-search"]
 dependencies = [
     "click>=8.0",
+    "awscli>=1.0",
 ]
 
 [project.optional-dependencies]
