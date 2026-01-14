@@ -5,17 +5,25 @@ Local OpenAlex database with 284M+ scholarly works, abstracts, and semantic sear
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
-## Why OpenAlex Local?
+<details>
+<summary><strong>Why OpenAlex Local?</strong></summary>
+
+**Built for the LLM era** - features that matter for AI research assistants:
 
 | Feature | Benefit |
 |---------|---------|
-| 284M Works | More coverage than CrossRef |
-| Abstracts | High availability for semantic search |
-| Concepts & Topics | Built-in classification |
-| Author Disambiguation | Linked to institutions |
-| Open Access Info | OA status and URLs |
+| 📚 **284M Works** | More coverage than CrossRef |
+| 📝 **Abstracts** | ~45-60% availability for semantic search |
+| 🏷️ **Concepts & Topics** | Built-in classification |
+| 👤 **Author Disambiguation** | Linked to institutions |
+| 🔓 **Open Access Info** | OA status and URLs |
 
-## Installation
+Perfect for: RAG systems, research assistants, literature review automation.
+
+</details>
+
+<details>
+<summary><strong>Installation</strong></summary>
 
 ```bash
 pip install openalex-local
@@ -24,30 +32,31 @@ pip install openalex-local
 From source:
 ```bash
 git clone https://github.com/ywatanabe1989/openalex-local
-cd openalex-local && pip install -e .
+cd openalex-local && make install
 ```
 
-## Database Setup
-
-The database requires downloading the OpenAlex snapshot (~330 GB compressed).
-
+Database setup (~300 GB, ~1-2 days to build):
 ```bash
-# 1. Download OpenAlex Works snapshot
-python scripts/database/01_download_snapshot.py
+# Check system status
+make status
+
+# 1. Download OpenAlex Works snapshot (~300GB)
+make download-screen  # runs in background
 
 # 2. Build SQLite database
-python scripts/database/02_build_database.py
+make build-db
 
 # 3. Build FTS5 index
-python scripts/database/03_build_fts_index.py
+make build-fts
 ```
 
-## Usage
+</details>
 
-### Python API
+<details>
+<summary><strong>Python API</strong></summary>
 
 ```python
-from openalex_local import search, get
+from openalex_local import search, get, count
 
 # Full-text search (title + abstract)
 results = search("machine learning neural networks")
@@ -59,17 +68,29 @@ for work in results:
 # Get by OpenAlex ID or DOI
 work = get("W2741809807")
 work = get("10.1038/nature12373")
+
+# Count matches
+n = count("CRISPR")
 ```
 
-### CLI
+</details>
+
+<details>
+<summary><strong>CLI</strong></summary>
 
 ```bash
 openalex-local search "CRISPR genome editing" -n 5
 openalex-local get W2741809807
 openalex-local get 10.1038/nature12373
+openalex-local count "machine learning"
 ```
 
-## Comparison with CrossRef Local
+</details>
+
+<details>
+<summary><strong>Related Projects</strong></summary>
+
+**[crossref-local](https://github.com/ywatanabe1989/crossref-local)** - Sister project with CrossRef data:
 
 | Feature | crossref-local | openalex-local |
 |---------|----------------|----------------|
@@ -78,7 +99,6 @@ openalex-local get 10.1038/nature12373
 | Update frequency | Real-time | Monthly |
 | DOI authority | ✓ (source) | Uses CrossRef |
 | Citations | Raw references | Linked works |
-| Impact Factor | Calculated | Pre-computed |
 | Concepts/Topics | ❌ | ✓ |
 | Author IDs | ❌ | ✓ |
 | Best for | DOI lookup, raw refs | Semantic search |
@@ -86,13 +106,22 @@ openalex-local get 10.1038/nature12373
 **When to use CrossRef**: Real-time DOI updates, raw reference parsing, authoritative metadata.
 **When to use OpenAlex**: Semantic search, citation analysis, topic discovery.
 
-See also: [crossref-local](https://github.com/ywatanabe1989/crossref-local)
+</details>
 
-## Data Source
+<details>
+<summary><strong>Data Source</strong></summary>
 
 Data from [OpenAlex](https://openalex.org/), an open catalog of scholarly works.
 Updated monthly from their [snapshot](https://docs.openalex.org/download-all-data/openalex-snapshot).
 
-## License
+</details>
 
-AGPL-3.0 - see [LICENSE](LICENSE) for details.
+---
+
+<p align="center">
+  <a href="https://scitex.ai"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
+  <br>
+  AGPL-3.0 · ywatanabe@scitex.ai
+</p>
+
+<!-- EOF -->
