@@ -57,6 +57,7 @@ COMMANDS:
 OPTIONS:
     -y, --yes       Skip confirmation prompt
     -n, --dry-run   Show what would be done
+    -b, --bandwidth LIMIT  Limit bandwidth (e.g., 50MB/s, 10MB/s). Default: unlimited
     -h, --help      Show this help
 
 EXAMPLES:
@@ -67,6 +68,12 @@ EXAMPLES:
     screen -S download
     $(basename "$0") all
     # Ctrl-A D to detach
+
+    # Download with bandwidth limit (50 MB/s)
+    $(basename "$0") works --bandwidth 50MB/s
+
+    # Low-impact background download (10 MB/s)
+    $(basename "$0") works -y -b 10MB/s
 
     # Resume interrupted download
     $(basename "$0") resume
@@ -149,6 +156,11 @@ download_works() {
     echo "Source: ${OPENALEX_S3_BASE}/works/"
     echo "Target: ${WORKS_DIR}/"
     echo "Estimated: ~200-300GB compressed"
+    if [[ -n "$BANDWIDTH" ]]; then
+        echo -e "Bandwidth: ${GREEN}${BANDWIDTH}${NC} (limited)"
+    else
+        echo -e "Bandwidth: ${YELLOW}Unlimited${NC}"
+    fi
     echo "Note: Download is resumable. Run again if interrupted."
     echo -e "${BOLD}========================================${NC}"
     echo ""
@@ -164,12 +176,31 @@ download_works() {
     log "Downloading... (this will take several hours)"
     log "Log: $LOG_DIR/download_works.log"
 
+    # Build AWS CLI options
+    AWS_OPTS=(
+        "--no-sign-request"
+        "--only-show-errors"
+    )
+
+    # Apply bandwidth limit if specified
+    if [[ -n "$BANDWIDTH" ]]; then
+        log "Bandwidth limit: $BANDWIDTH"
+        # Set AWS CLI max_bandwidth via config
+        export AWS_CONFIG_FILE="${PROJECT_ROOT}/.aws_download_config"
+        mkdir -p "$(dirname "$AWS_CONFIG_FILE")"
+        cat > "$AWS_CONFIG_FILE" << EOF
+[default]
+s3 =
+    max_bandwidth = $BANDWIDTH
+    max_concurrent_requests = 2
+EOF
+    fi
+
     # Use aws s3 sync for resumable download
     aws s3 sync \
         "${OPENALEX_S3_BASE}/works/" \
         "$WORKS_DIR/" \
-        --no-sign-request \
-        --only-show-errors \
+        "${AWS_OPTS[@]}" \
         2>&1 | tee "$LOG_DIR/download_works.log"
 
     # Verify
@@ -221,12 +252,14 @@ show_status() {
 # Parse arguments
 DRY_RUN=0
 YES=0
+BANDWIDTH=""
 COMMAND="all"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -n|--dry-run) DRY_RUN=1; shift ;;
         -y|--yes) YES=1; shift ;;
+        -b|--bandwidth) BANDWIDTH="$2"; shift 2 ;;
         -h|--help) usage; exit 0 ;;
         all|manifest|works|resume|status) COMMAND="$1"; shift ;;
         *) error "Unknown option: $1"; usage; exit 1 ;;

@@ -12,7 +12,7 @@ PROJECT_ROOT := $(shell pwd)
 SCRIPTS := $(PROJECT_ROOT)/scripts
 
 .PHONY: help status check install dev test \
-        download download-manifest download-screen \
+        download download-works download-others download-stop \
         build-db build-fts \
         clean lint format
 
@@ -48,20 +48,45 @@ dev: ## Install with dev dependencies
 	pip install -e ".[dev]"
 
 # ============================================================
-# DATABASE BUILDING
+# DATABASE DOWNLOAD
 # ============================================================
+# Full snapshot: ~760GB (works: 698GB, authors: 59GB, others: ~3GB)
+# Downloads are resumable - safe to interrupt and restart
 
-download-manifest: ## Download manifest to check snapshot size
-	@$(SCRIPTS)/database/00_download_all.sh manifest
+download: ## Download ALL entities in background (recommended)
+	@echo "Starting full OpenAlex download (~760GB)..."
+	@echo "Works (698GB) and other entities (60GB) will download in parallel."
+	@mkdir -p $(PROJECT_ROOT)/logs
+	@screen -dmS openalex-download bash -c '$(SCRIPTS)/database/00_download_safe.sh 2>&1 | tee $(PROJECT_ROOT)/logs/download_safe_run.log'
+	@screen -dmS openalex-others bash -c '$(SCRIPTS)/database/01_download_other_entities.sh 2>&1 | tee $(PROJECT_ROOT)/logs/download_others.log'
+	@echo ""
+	@echo "Downloads started in background:"
+	@echo "  - openalex-download: works (698GB)"
+	@echo "  - openalex-others: authors + 9 others (60GB)"
+	@echo ""
+	@echo "Monitor: make status"
+	@echo "Attach:  screen -r openalex-download"
+	@echo "Logs:    tail -f logs/download_safe_run.log"
 
-download: ## Download OpenAlex works snapshot (~300GB)
-	@$(SCRIPTS)/database/00_download_all.sh works
+download-works: ## Download works only (698GB)
+	@echo "Starting works download (698GB)..."
+	@mkdir -p $(PROJECT_ROOT)/logs
+	@screen -dmS openalex-download bash -c '$(SCRIPTS)/database/00_download_safe.sh 2>&1 | tee $(PROJECT_ROOT)/logs/download_safe_run.log'
+	@echo "Started in screen session: openalex-download"
+	@echo "Monitor: make status"
 
-download-screen: ## Download in detached screen session (recommended)
-	@echo "Starting download in screen session 'openalex-download'..."
-	@screen -dmS openalex-download $(SCRIPTS)/database/00_download_all.sh works -y
-	@echo "Detached. To attach: screen -r openalex-download"
-	@echo "To check progress: make status"
+download-others: ## Download authors + other entities (60GB)
+	@echo "Starting download of authors + other entities (60GB)..."
+	@mkdir -p $(PROJECT_ROOT)/logs
+	@screen -dmS openalex-others bash -c '$(SCRIPTS)/database/01_download_other_entities.sh 2>&1 | tee $(PROJECT_ROOT)/logs/download_others.log'
+	@echo "Started in screen session: openalex-others"
+	@echo "Monitor: make status"
+
+download-stop: ## Stop all active downloads
+	@echo "Stopping downloads (safe to resume later)..."
+	@screen -S openalex-download -X quit 2>/dev/null || true
+	@screen -S openalex-others -X quit 2>/dev/null || true
+	@echo "Stopped. Run 'make download' to resume."
 
 build-db: ## Build SQLite database from snapshot
 	@echo "TODO: Implement build script"
