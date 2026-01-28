@@ -47,12 +47,19 @@ def get_db_path() -> Path:
     )
 
 
+# Default port (SciTeX port scheme: 31292 for openalex)
+DEFAULT_PORT = 31292
+DEFAULT_HOST = "0.0.0.0"
+
+
 class Config:
     """Configuration container."""
 
     _db_path: Optional[Path] = None
     _api_url: Optional[str] = None
     _mode: Optional[str] = None  # "db" or "http"
+    _port: Optional[int] = None
+    _host: Optional[str] = None
 
     @classmethod
     def get_db_path(cls) -> Path:
@@ -122,8 +129,54 @@ class Config:
         return "db"
 
     @classmethod
+    def get_port(cls) -> int:
+        """Get server port."""
+        if cls._port:
+            return cls._port
+
+        # Check environment variables (scitex priority)
+        for var in [
+            "SCITEX_SCHOLAR_OPENALEX_PORT",
+            "OPENALEX_LOCAL_PORT",
+        ]:
+            port = os.environ.get(var)
+            if port:
+                return int(port)
+
+        return DEFAULT_PORT
+
+    @classmethod
+    def set_port(cls, port: int) -> None:
+        """Set server port explicitly."""
+        cls._port = port
+
+    @classmethod
+    def get_host(cls) -> str:
+        """Get server host."""
+        if cls._host:
+            return cls._host
+
+        # Check environment variables (scitex priority)
+        for var in [
+            "SCITEX_SCHOLAR_OPENALEX_HOST",
+            "OPENALEX_LOCAL_HOST",
+        ]:
+            host = os.environ.get(var)
+            if host:
+                return host
+
+        return DEFAULT_HOST
+
+    @classmethod
+    def set_host(cls, host: str) -> None:
+        """Set server host explicitly."""
+        cls._host = host
+
+    @classmethod
     def reset(cls) -> None:
         """Reset configuration (for testing)."""
         cls._db_path = None
         cls._api_url = None
         cls._mode = None
+        cls._port = None
+        cls._host = None
