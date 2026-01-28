@@ -66,7 +66,11 @@ class Work:
         openalex_id = data.get("id", "").replace("https://openalex.org/", "")
 
         # Extract DOI
-        doi = data.get("doi", "").replace("https://doi.org/", "") if data.get("doi") else None
+        doi = (
+            data.get("doi", "").replace("https://doi.org/", "")
+            if data.get("doi")
+            else None
+        )
 
         # Extract authors
         authors = []
@@ -81,7 +85,11 @@ class Work:
         inv_index = data.get("abstract_inverted_index")
         if inv_index:
             words = sorted(
-                [(pos, word) for word, positions in inv_index.items() for pos in positions]
+                [
+                    (pos, word)
+                    for word, positions in inv_index.items()
+                    for pos in positions
+                ]
             )
             abstract = " ".join(word for _, word in words)
 
@@ -103,7 +111,10 @@ class Work:
 
         # Extract topics (top 3)
         topics = [
-            {"name": t.get("display_name"), "subfield": t.get("subfield", {}).get("display_name")}
+            {
+                "name": t.get("display_name"),
+                "subfield": t.get("subfield", {}).get("display_name"),
+            }
             for t in (data.get("topics") or [])[:3]
         ]
 
@@ -133,6 +144,39 @@ class Work:
             ],
             is_oa=oa_info.get("is_oa", False),
             oa_url=oa_info.get("oa_url"),
+        )
+
+    @classmethod
+    def from_db_row(cls, data: dict) -> "Work":
+        """
+        Create Work from database row dictionary.
+
+        Args:
+            data: Database row as dictionary (with parsed JSON fields)
+
+        Returns:
+            Work instance
+        """
+        return cls(
+            openalex_id=data.get("openalex_id", ""),
+            doi=data.get("doi"),
+            title=data.get("title"),
+            abstract=data.get("abstract"),
+            authors=data.get("authors", []),
+            year=data.get("year"),
+            source=data.get("source"),
+            issn=data.get("issn"),
+            volume=data.get("volume"),
+            issue=data.get("issue"),
+            pages=data.get("pages"),
+            publisher=data.get("publisher"),
+            type=data.get("type"),
+            concepts=data.get("concepts", []),
+            topics=data.get("topics", []),
+            cited_by_count=data.get("cited_by_count"),
+            referenced_works=data.get("referenced_works", []),
+            is_oa=bool(data.get("is_oa", False)),
+            oa_url=data.get("oa_url"),
         )
 
     def to_dict(self) -> dict:

@@ -51,6 +51,8 @@ class Config:
     """Configuration container."""
 
     _db_path: Optional[Path] = None
+    _api_url: Optional[str] = None
+    _mode: Optional[str] = None  # "db" or "http"
 
     @classmethod
     def get_db_path(cls) -> Path:
@@ -66,8 +68,62 @@ class Config:
         if not path.exists():
             raise FileNotFoundError(f"Database not found: {path}")
         cls._db_path = path
+        cls._mode = "db"
+
+    @classmethod
+    def get_api_url(cls) -> str:
+        """Get API URL for HTTP mode."""
+        if cls._api_url:
+            return cls._api_url
+
+        # Check environment variables (scitex priority)
+        for var in [
+            "SCITEX_SCHOLAR_OPENALEX_API_URL",
+            "OPENALEX_LOCAL_API_URL",
+        ]:
+            url = os.environ.get(var)
+            if url:
+                return url
+
+        return "http://localhost:31292"
+
+    @classmethod
+    def set_api_url(cls, url: str) -> None:
+        """Set API URL explicitly."""
+        cls._api_url = url
+        cls._mode = "http"
+
+    @classmethod
+    def get_mode(cls) -> str:
+        """
+        Get current mode.
+
+        Priority:
+        1. Explicitly set mode
+        2. OPENALEX_LOCAL_MODE environment variable
+        3. Auto-detect based on available config
+
+        Returns:
+            "db" or "http"
+        """
+        if cls._mode:
+            return cls._mode
+
+        # Check environment variable
+        env_mode = os.environ.get("OPENALEX_LOCAL_MODE", "").lower()
+        if env_mode in ("db", "http"):
+            return env_mode
+
+        # Check if API URL is set
+        if os.environ.get("OPENALEX_LOCAL_API_URL"):
+            return "http"
+
+        # Default to db mode (will raise FileNotFoundError if no database)
+        return "db"
 
     @classmethod
     def reset(cls) -> None:
         """Reset configuration (for testing)."""
         cls._db_path = None
+        cls._api_url = None
+        cls._mode = None
