@@ -1,7 +1,6 @@
 """Tests for openalex_local.models."""
 
-import pytest
-from openalex_local.models import Work, SearchResult
+from openalex_local import Work, SearchResult
 
 
 class TestWork:

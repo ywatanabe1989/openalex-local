@@ -10,7 +10,7 @@ Example:
 
 __version__ = "0.3.0"
 
-from .api import (
+from ._core import (
     Config,
     SearchResult,
     Work,
@@ -24,6 +24,9 @@ from .api import (
     info,
     search,
 )
+
+# Jobs module (public)
+from . import jobs
 
 __all__ = [
     # Core functions
@@ -41,4 +44,6 @@ __all__ = [
     "Work",
     "SearchResult",
     "Config",
+    # Jobs
+    "jobs",
 ]

@@ -35,7 +35,7 @@ dev = [
 ]
 
 [project.scripts]
-openalex-local = "openalex_local.cli:main"
+openalex-local = "openalex_local._cli.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/openalex-local"
