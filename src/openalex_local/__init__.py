@@ -11,11 +11,9 @@ Example:
 __version__ = "0.3.0"
 
 from ._core import (
-    Config,
     SearchResult,
     Work,
     configure,
-    configure_http,
     count,
     exists,
     get,
@@ -25,7 +23,7 @@ from ._core import (
     search,
 )
 
-# Jobs module (public)
+# Jobs module (public functions only)
 from . import jobs
 
 __all__ = [
@@ -38,12 +36,10 @@ __all__ = [
     "info",
     # Configuration
     "configure",
-    "configure_http",
     "get_mode",
-    # Classes
+    # Models
     "Work",
     "SearchResult",
-    "Config",
     # Jobs
     "jobs",
 ]
