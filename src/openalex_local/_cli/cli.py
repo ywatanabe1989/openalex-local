@@ -66,7 +66,7 @@ def cli(ctx, http, api_url):
     ctx.ensure_object(dict)
 
     if http or api_url:
-        from .. import configure_http
+        from .._core.api import configure_http
 
         configure_http(api_url or "http://localhost:31292")
 
