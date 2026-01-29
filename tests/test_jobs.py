@@ -21,13 +21,13 @@ class TestJobsModule:
         assert callable(jobs.run)
 
 
-class TestJobQueue:
-    """Test JobQueue class directly with temp directory."""
+class TestJobQueueInternal:
+    """Test _JobQueue class directly with temp directory (internal API)."""
 
     def test_create_returns_job(self):
-        """Test that create returns a Job object."""
+        """Test that create returns a _Job object."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
+            queue = jobs._JobQueue(jobs_dir=Path(tmpdir))
             job = queue.create(items=["item1", "item2"], name="test_job")
             assert job is not None
             assert hasattr(job, "id")
@@ -37,7 +37,7 @@ class TestJobQueue:
     def test_create_persists_job(self):
         """Test that created job is persisted."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
+            queue = jobs._JobQueue(jobs_dir=Path(tmpdir))
             job = queue.create(items=["item1", "item2", "item3"], name="test_job")
             # Job should be retrievable
             loaded = queue.load(job.id)
@@ -48,21 +48,21 @@ class TestJobQueue:
     def test_load_nonexistent_job_returns_none(self):
         """Test that loading non-existent job returns None."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
+            queue = jobs._JobQueue(jobs_dir=Path(tmpdir))
             result = queue.load("nonexistent_job_id")
             assert result is None
 
     def test_list_returns_list(self):
         """Test that list returns a list."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
+            queue = jobs._JobQueue(jobs_dir=Path(tmpdir))
             result = queue.list()
             assert isinstance(result, list)
 
     def test_list_includes_created_jobs(self):
         """Test that list includes created jobs."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
+            queue = jobs._JobQueue(jobs_dir=Path(tmpdir))
             job1 = queue.create(items=["a"], name="job1")
             job2 = queue.create(items=["b"], name="job2")
 
@@ -75,7 +75,7 @@ class TestJobQueue:
     def test_delete_removes_job(self):
         """Test that delete removes a job."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            queue = jobs.JobQueue(jobs_dir=Path(tmpdir))
+            queue = jobs._JobQueue(jobs_dir=Path(tmpdir))
             job = queue.create(items=["a"])
 
             assert queue.load(job.id) is not None
@@ -84,12 +84,12 @@ class TestJobQueue:
             assert queue.load(job.id) is None
 
 
-class TestJob:
-    """Test Job dataclass."""
+class TestJobInternal:
+    """Test _Job dataclass (internal API)."""
 
     def test_job_pending_property(self):
         """Test pending property returns items not processed."""
-        job = jobs.Job(id="test", items=["a", "b", "c"])
+        job = jobs._Job(id="test", items=["a", "b", "c"])
         job.completed = ["a"]
         job.failed = {"b": "error"}
 
@@ -97,14 +97,14 @@ class TestJob:
 
     def test_job_progress_property(self):
         """Test progress property returns correct percentage."""
-        job = jobs.Job(id="test", items=["a", "b", "c", "d"])
+        job = jobs._Job(id="test", items=["a", "b", "c", "d"])
         job.completed = ["a", "b"]
 
         assert job.progress == 50.0
 
     def test_job_to_dict(self):
         """Test to_dict serialization."""
-        job = jobs.Job(id="test123", items=["x", "y"])
+        job = jobs._Job(id="test123", items=["x", "y"])
         d = job.to_dict()
 
         assert d["id"] == "test123"
@@ -124,7 +124,7 @@ class TestJob:
             "updated_at": 1234567890.0,
             "metadata": {"name": "test"},
         }
-        job = jobs.Job.from_dict(data)
+        job = jobs._Job.from_dict(data)
 
         assert job.id == "test456"
         assert job.items == ["p", "q"]

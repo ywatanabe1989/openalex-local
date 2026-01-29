@@ -18,18 +18,19 @@ from .db import close_db, get_db
 from .models import SearchResult, Work
 
 __all__ = [
+    # Core functions
     "search",
     "count",
     "get",
     "get_many",
     "exists",
-    "configure",
-    "configure_http",
-    "get_mode",
     "info",
+    # Configuration
+    "configure",
+    "get_mode",
+    # Models (public)
     "Work",
     "SearchResult",
-    "Config",
 ]
 
 
