@@ -108,6 +108,19 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, as_json):
     except FileNotFoundError as e:
         click.secho(f"Error: {e}", fg="red", err=True)
         sys.exit(1)
+    except ConnectionError as e:
+        click.secho(f"Error: {e}", fg="red", err=True)
+        click.secho(
+            "\nHint: Make sure the relay server is running:", fg="yellow", err=True
+        )
+        click.secho("  1. On NAS: openalex-local relay", fg="yellow", err=True)
+        click.secho(
+            "  2. SSH tunnel: ssh -L 31292:127.0.0.1:31292 nas", fg="yellow", err=True
+        )
+        sys.exit(1)
+    except Exception as e:
+        click.secho(f"Error: {e}", fg="red", err=True)
+        sys.exit(1)
 
     if as_json:
         output = {
@@ -239,6 +252,50 @@ cli.add_command(mcp)
 from .cli_cache import cache_group
 
 cli.add_command(cache_group)
+
+
+@cli.command("relay")
+@click.option("--host", default=None, envvar="OPENALEX_LOCAL_HOST", help="Host to bind")
+@click.option(
+    "--port",
+    default=None,
+    type=int,
+    envvar="OPENALEX_LOCAL_PORT",
+    help="Port to listen on (default: 31292)",
+)
+def relay(host: str, port: int):
+    """Run HTTP relay server for remote database access.
+
+    \b
+    This runs a FastAPI server that provides proper full-text search
+    using FTS5 index across all 284M+ papers.
+
+    \b
+    Example:
+      openalex-local relay                  # Run on 0.0.0.0:31292
+      openalex-local relay --port 8080      # Custom port
+
+    \b
+    Then connect with http mode:
+      openalex-local --http search "CRISPR"
+      curl "http://localhost:31292/works?q=CRISPR&limit=10"
+    """
+    try:
+        from .._server import run_server, DEFAULT_HOST, DEFAULT_PORT
+    except ImportError:
+        click.echo(
+            "API server requires fastapi and uvicorn. Install with:\n"
+            "  pip install fastapi uvicorn",
+            err=True,
+        )
+        sys.exit(1)
+
+    host = host or DEFAULT_HOST
+    port = port or DEFAULT_PORT
+    click.echo(f"Starting OpenAlex Local relay server on {host}:{port}")
+    click.echo(f"Search endpoint: http://{host}:{port}/works?q=<query>")
+    click.echo(f"Docs: http://{host}:{port}/docs")
+    run_server(host=host, port=port)
 
 
 def main():

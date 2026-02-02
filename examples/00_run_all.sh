@@ -19,12 +19,8 @@ show_help() {
     echo "  -h, --help    Show this help message"
     echo ""
     echo "Examples run:"
-    echo "  01_basic_search.py       Basic full-text search"
-    echo "  02_get_by_doi.py         Retrieve work by DOI"
-    echo "  03_citations.py          APA and BibTeX citations"
-    echo "  04_cache_workflow.py     Local caching workflow"
-    echo "  05_async_search.py       Async concurrent search"
-    echo "  06_enrich_workflow.py    Enriching search results"
+    echo "  01_quickstart.py           Basic quickstart demo"
+    echo "  02_cli_demo.sh             CLI demonstration"
     echo ""
     echo "Output:"
     echo "  Each script creates its own log in script_out/"
@@ -35,7 +31,7 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
 }
 
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
     show_help
     exit 0
 fi
@@ -44,17 +40,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # Initialize log
-echo "=== OpenAlex Local Examples Runner ===" > "$LOG_FILE"
-echo "Started: $(date)" >> "$LOG_FILE"
-echo "" >> "$LOG_FILE"
+echo "=== OpenAlex Local Examples Runner ===" >"$LOG_FILE"
+echo "Started: $(date)" >>"$LOG_FILE"
+echo "" >>"$LOG_FILE"
 
 log "========================================"
 log "OpenAlex Local Examples Runner"
 log "========================================"
 log ""
 
-# Run all numbered Python scripts
-SCRIPTS=(01_*.py 02_*.py 03_*.py 04_*.py 05_*.py 06_*.py)
+# Run all numbered scripts (Python and Shell)
+SCRIPTS=(01_*.py 01_*.sh 02_*.py 02_*.sh)
 COUNT=0
 TOTAL=0
 
@@ -71,10 +67,18 @@ for pattern in "${SCRIPTS[@]}"; do
         if [[ -f "$script" ]]; then
             COUNT=$((COUNT + 1))
             log "[$COUNT/$TOTAL] Running $script..."
-            if python "$script" 2>&1 | tee -a "$LOG_FILE"; then
-                log "Done: $script"
-            else
-                log "WARNING: $script had errors"
+            if [[ "$script" == *.py ]]; then
+                if python "$script" 2>&1 | tee -a "$LOG_FILE"; then
+                    log "Done: $script"
+                else
+                    log "WARNING: $script had errors"
+                fi
+            elif [[ "$script" == *.sh ]]; then
+                if bash "$script" 2>&1 | tee -a "$LOG_FILE"; then
+                    log "Done: $script"
+                else
+                    log "WARNING: $script had errors"
+                fi
             fi
             log ""
         fi
