@@ -6,6 +6,8 @@ from .api import (
     Work,
     configure,
     count,
+    enrich,
+    enrich_ids,
     exists,
     get,
     get_many,
@@ -22,6 +24,9 @@ __all__ = [
     "get_many",
     "exists",
     "info",
+    # Enrich functions
+    "enrich",
+    "enrich_ids",
     # Configuration
     "configure",
     "get_mode",

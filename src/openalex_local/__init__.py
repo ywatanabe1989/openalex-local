@@ -15,6 +15,8 @@ from ._core import (
     Work,
     configure,
     count,
+    enrich,
+    enrich_ids,
     exists,
     get,
     get_many,
@@ -26,6 +28,12 @@ from ._core import (
 # Jobs module (public functions only)
 from . import jobs
 
+# Async module
+from . import aio
+
+# Cache module
+from . import cache
+
 __all__ = [
     # Core functions
     "search",
@@ -34,6 +42,9 @@ __all__ = [
     "get_many",
     "exists",
     "info",
+    # Enrich functions
+    "enrich",
+    "enrich_ids",
     # Configuration
     "configure",
     "get_mode",
@@ -42,4 +53,8 @@ __all__ = [
     "SearchResult",
     # Jobs
     "jobs",
+    # Async
+    "aio",
+    # Cache
+    "cache",
 ]
