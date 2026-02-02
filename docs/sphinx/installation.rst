@@ -1,8 +1,15 @@
 Installation
 ============
 
-From PyPI
----------
+Requirements
+------------
+
+- Python 3.10+
+- SQLite with FTS5 support (included in most Python installations)
+- ~300 GB disk space for full database
+
+Install from PyPI
+-----------------
 
 .. code-block:: bash
 
@@ -21,8 +28,8 @@ With optional dependencies:
    # All features
    pip install openalex-local[all]
 
-From Source
------------
+Install from Source
+-------------------
 
 .. code-block:: bash
 
@@ -32,7 +39,25 @@ From Source
 Database Setup
 --------------
 
-The database requires ~300 GB disk space and takes 1-2 days to build:
+The database can be set up in several ways:
+
+**Option 1: Environment Variable**
+
+.. code-block:: bash
+
+   export OPENALEX_LOCAL_DB=/path/to/openalex.db
+
+**Option 2: Default Locations**
+
+The package searches these locations automatically:
+
+1. ``./openalex.db`` (current directory)
+2. ``~/openalex.db`` (home directory)
+3. ``~/.openalex/openalex.db``
+
+**Option 3: Build from Scratch**
+
+Building the full database requires ~300 GB disk space:
 
 .. code-block:: bash
 
@@ -48,28 +73,40 @@ The database requires ~300 GB disk space and takes 1-2 days to build:
    # 3. Build FTS5 index
    make build-fts
 
-Remote Mode (HTTP)
-------------------
+HTTP Mode (No Local Database)
+-----------------------------
 
-If you have the database on a remote server:
+Connect to a remote server instead of using a local database.
 
-1. Start the relay server on the database server:
+**On the server (with database):**
 
-   .. code-block:: bash
+.. code-block:: bash
 
-      openalex-local relay --port 31292
+   openalex-local relay --port 31292
 
-2. On your local machine, connect via SSH tunnel:
+**On your machine:**
 
-   .. code-block:: bash
+.. code-block:: bash
 
-      ssh -L 31292:127.0.0.1:31292 your-server
+   # Option 1: SSH tunnel
+   ssh -L 31292:127.0.0.1:31292 your-server
 
-3. Use the CLI normally (auto-detects HTTP mode):
+   # Option 2: Set environment variable
+   export OPENALEX_LOCAL_API_URL=http://server-ip:31292
+   export OPENALEX_LOCAL_MODE=http
 
-   .. code-block:: bash
+The CLI and Python API work identically in both modes.
 
-      openalex-local search "neural networks"
+Verify Installation
+-------------------
+
+.. code-block:: bash
+
+   # Check version
+   openalex-local --version
+
+   # Check status and configuration
+   openalex-local status
 
 Environment Variables
 ---------------------

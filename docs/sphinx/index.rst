@@ -6,11 +6,11 @@ Local OpenAlex database with 284M+ scholarly works, abstracts, and semantic sear
 .. note::
    **Built for the LLM era** - features that matter for AI research assistants:
 
-   - 📚 **284M Works** - More coverage than CrossRef
-   - 📝 **Abstracts** - ~45-60% availability for semantic search
-   - 🏷️ **Concepts & Topics** - Built-in classification
-   - 👤 **Author Disambiguation** - Linked to institutions
-   - 🔓 **Open Access Info** - OA status and URLs
+   - **284M Works** - More coverage than CrossRef
+   - **Abstracts** - ~45-60% availability for semantic search
+   - **Concepts & Topics** - Built-in classification
+   - **Author Disambiguation** - Linked to institutions
+   - **Open Access Info** - OA status and URLs
 
 Quick Example
 -------------
@@ -34,12 +34,23 @@ Quick Example
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents
+   :caption: Getting Started
 
    installation
    quickstart
+
+.. toctree::
+   :maxdepth: 2
+   :caption: User Guide
+
    cli_reference
-   api/modules
+   http_api
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   api/openalex_local
 
 Indices and tables
 ==================
