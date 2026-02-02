@@ -242,16 +242,38 @@ def info() -> dict:
     # DB mode - will raise FileNotFoundError if no database
     db = get_db()
 
-    # Get work count
-    row = db.fetchone("SELECT COUNT(*) as count FROM works")
-    work_count = row["count"] if row else 0
-
-    # Get FTS count
+    # Get work count from metadata (fast) or fallback to MAX(rowid) approximation
+    work_count = 0
     try:
-        row = db.fetchone("SELECT COUNT(*) as count FROM works_fts")
-        fts_count = row["count"] if row else 0
+        row = db.fetchone("SELECT value FROM _metadata WHERE key = 'total_works'")
+        if row:
+            work_count = int(row["value"])
     except Exception:
-        fts_count = 0
+        pass
+
+    if work_count == 0:
+        # Fallback: use MAX(rowid) as approximation (much faster than COUNT(*))
+        try:
+            row = db.fetchone("SELECT MAX(rowid) as count FROM works")
+            work_count = row["count"] if row else 0
+        except Exception:
+            work_count = 0
+
+    # Get FTS count from metadata (fast) or fallback
+    fts_count = 0
+    try:
+        row = db.fetchone("SELECT value FROM _metadata WHERE key = 'fts_total_indexed'")
+        if row:
+            fts_count = int(row["value"])
+    except Exception:
+        pass
+
+    if fts_count == 0:
+        try:
+            row = db.fetchone("SELECT MAX(rowid) as count FROM works_fts")
+            fts_count = row["count"] if row else 0
+        except Exception:
+            fts_count = 0
 
     return {
         "status": "ok",
