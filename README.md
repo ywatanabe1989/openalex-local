@@ -2,6 +2,9 @@
 
 Local OpenAlex database with 284M+ scholarly works, abstracts, and semantic search.
 
+[![PyPI version](https://badge.fury.io/py/openalex-local.svg)](https://badge.fury.io/py/openalex-local)
+[![Documentation](https://readthedocs.org/projects/openalex-local/badge/?version=latest)](https://openalex-local.readthedocs.io/en/latest/)
+[![Tests](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
@@ -12,11 +15,11 @@ Local OpenAlex database with 284M+ scholarly works, abstracts, and semantic sear
 
 | Feature | Benefit |
 |---------|---------|
-| 📚 **284M Works** | More coverage than CrossRef |
-| 📝 **Abstracts** | ~45-60% availability for semantic search |
-| 🏷️ **Concepts & Topics** | Built-in classification |
-| 👤 **Author Disambiguation** | Linked to institutions |
-| 🔓 **Open Access Info** | OA status and URLs |
+| **284M Works** | More coverage than CrossRef |
+| **Abstracts** | ~45-60% availability for semantic search |
+| **Concepts & Topics** | Built-in classification |
+| **Author Disambiguation** | Linked to institutions |
+| **Open Access Info** | OA status and URLs |
 
 Perfect for: RAG systems, research assistants, literature review automation.
 
@@ -80,10 +83,116 @@ n = count("CRISPR")
 
 ```bash
 openalex-local search "CRISPR genome editing" -n 5
-openalex-local get W2741809807
-openalex-local get 10.1038/nature12373
-openalex-local count "machine learning"
+openalex-local search-by-doi W2741809807
+openalex-local search-by-doi 10.1038/nature12373
+openalex-local status  # Configuration and database stats
 ```
+
+With abstracts (`-a` flag):
+```
+$ openalex-local search "neural network" -n 1 -a
+
+Found 1,523,847 matches in 45.2ms
+
+1. Deep learning for neural networks (2015)
+   OpenAlex ID: W2741809807
+   Abstract: This paper presents a comprehensive overview of deep learning
+   techniques for neural network architectures...
+```
+
+</details>
+
+<details>
+<summary><strong>HTTP API</strong></summary>
+
+Start the FastAPI server:
+```bash
+openalex-local relay --host 0.0.0.0 --port 31292
+```
+
+Endpoints:
+```bash
+# Search works (FTS5)
+curl "http://localhost:31292/works?q=CRISPR&limit=10"
+
+# Get by ID or DOI
+curl "http://localhost:31292/works/W2741809807"
+curl "http://localhost:31292/works/10.1038/nature12373"
+
+# Batch lookup
+curl -X POST "http://localhost:31292/works/batch" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": ["W2741809807", "10.1038/nature12373"]}'
+
+# Database info
+curl "http://localhost:31292/info"
+```
+
+HTTP mode (connect to running server):
+```bash
+# On local machine (if server is remote)
+ssh -L 31292:127.0.0.1:31292 your-server
+
+# Python client
+from openalex_local import configure_http
+configure_http("http://localhost:31292")
+
+# Or via CLI
+openalex-local --http search "CRISPR"
+```
+
+</details>
+
+<details>
+<summary><strong>MCP Server</strong></summary>
+
+Run as MCP (Model Context Protocol) server:
+```bash
+openalex-local mcp start
+```
+
+Local MCP client configuration:
+```json
+{
+  "mcpServers": {
+    "openalex-local": {
+      "command": "openalex-local",
+      "args": ["mcp", "start"],
+      "env": {
+        "OPENALEX_LOCAL_DB": "/path/to/openalex.db"
+      }
+    }
+  }
+}
+```
+
+Remote MCP via HTTP:
+```bash
+# On server: start persistent MCP server
+openalex-local mcp start -t http --host 0.0.0.0 --port 8083
+```
+```json
+{
+  "mcpServers": {
+    "openalex-remote": {
+      "url": "http://your-server:8083/mcp"
+    }
+  }
+}
+```
+
+Diagnose setup:
+```bash
+openalex-local mcp doctor        # Check dependencies and database
+openalex-local mcp list-tools    # Show available MCP tools
+openalex-local mcp installation  # Show client config examples
+```
+
+Available tools:
+- `search` - Full-text search across 284M+ papers
+- `search_by_id` - Get paper by OpenAlex ID or DOI
+- `enrich_ids` - Batch lookup with metadata
+- `status` - Database statistics
 
 </details>
 
@@ -97,14 +206,27 @@ openalex-local count "machine learning"
 | Works | 167M | 284M |
 | Abstracts | ~21% | ~45-60% |
 | Update frequency | Real-time | Monthly |
-| DOI authority | ✓ (source) | Uses CrossRef |
+| DOI authority | Yes (source) | Uses CrossRef |
 | Citations | Raw references | Linked works |
-| Concepts/Topics | ❌ | ✓ |
-| Author IDs | ❌ | ✓ |
+| Concepts/Topics | No | Yes |
+| Author IDs | No | Yes |
 | Best for | DOI lookup, raw refs | Semantic search |
 
 **When to use CrossRef**: Real-time DOI updates, raw reference parsing, authoritative metadata.
 **When to use OpenAlex**: Semantic search, citation analysis, topic discovery.
+
+</details>
+
+<details>
+<summary><strong>Documentation</strong></summary>
+
+Full documentation available at [openalex-local.readthedocs.io](https://openalex-local.readthedocs.io/en/latest/)
+
+- [Installation Guide](https://openalex-local.readthedocs.io/en/latest/installation.html)
+- [Quickstart](https://openalex-local.readthedocs.io/en/latest/quickstart.html)
+- [CLI Reference](https://openalex-local.readthedocs.io/en/latest/cli_reference.html)
+- [HTTP API Reference](https://openalex-local.readthedocs.io/en/latest/http_api.html)
+- [Python API](https://openalex-local.readthedocs.io/en/latest/api/openalex_local.html)
 
 </details>
 
