@@ -33,6 +33,16 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
 ]
+server = [
+    "fastapi>=0.100",
+    "uvicorn>=0.23",
+]
+mcp = [
+    "fastmcp>=0.1",
+]
+all = [
+    "openalex-local[server,mcp,dev]",
+]
 
 [project.scripts]
 openalex-local = "openalex_local._cli.cli:main"

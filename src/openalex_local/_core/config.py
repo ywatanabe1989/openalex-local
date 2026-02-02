@@ -43,7 +43,7 @@ class Config:
 
     _db_path: _Optional[_Path] = None
     _api_url: _Optional[str] = None
-    _mode: _Optional[str] = None
+    _mode: str = "auto"  # "auto", "db", or "http"
 
     @classmethod
     def get_db_path(cls) -> _Path:
@@ -63,26 +63,58 @@ class Config:
     def get_api_url(cls) -> str:
         if cls._api_url:
             return cls._api_url
-        return _os.environ.get("OPENALEX_LOCAL_API_URL", "http://localhost:31292")
+        return _os.environ.get(
+            "OPENALEX_LOCAL_API_URL", f"http://localhost:{DEFAULT_PORT}"
+        )
 
     @classmethod
     def set_api_url(cls, url: str) -> None:
-        cls._api_url = url
+        cls._api_url = url.rstrip("/")
         cls._mode = "http"
 
     @classmethod
+    def set_mode(cls, mode: str) -> None:
+        """Set mode explicitly: 'db', 'http', or 'auto'."""
+        if mode not in ("auto", "db", "http"):
+            raise ValueError(f"Invalid mode: {mode}. Use 'auto', 'db', or 'http'")
+        cls._mode = mode
+
+    @classmethod
     def get_mode(cls) -> str:
-        if cls._mode:
-            return cls._mode
-        if _os.environ.get("OPENALEX_LOCAL_API_URL"):
-            return "http"
-        return "db"
+        """
+        Get current mode.
+
+        Returns:
+            "db" if using direct database access
+            "http" if using HTTP API
+        """
+        if cls._mode == "auto":
+            # Check environment variable for explicit mode
+            env_mode = _os.environ.get("OPENALEX_LOCAL_MODE", "").lower()
+            if env_mode in ("http", "remote", "api"):
+                return "http"
+            if env_mode in ("db", "local"):
+                return "db"
+
+            # Check if API URL is set explicitly
+            if cls._api_url or _os.environ.get("OPENALEX_LOCAL_API_URL"):
+                return "http"
+
+            # Check if local database exists
+            try:
+                get_db_path()
+                return "db"
+            except FileNotFoundError:
+                # No local DB, try http
+                return "http"
+
+        return cls._mode
 
     @classmethod
     def reset(cls) -> None:
         cls._db_path = None
         cls._api_url = None
-        cls._mode = None
+        cls._mode = "auto"
 
 
 # EOF

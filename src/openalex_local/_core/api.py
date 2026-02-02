@@ -35,15 +35,9 @@ __all__ = [
 
 def _get_http_client():
     """Get HTTP client (lazy import to avoid circular dependency)."""
-    try:
-        from .remote import RemoteClient
+    from .._remote import RemoteClient
 
-        return RemoteClient(Config.get_api_url())
-    except ImportError:
-        raise NotImplementedError(
-            "HTTP mode not yet implemented. Use database mode by setting "
-            "OPENALEX_LOCAL_DB environment variable."
-        )
+    return RemoteClient(Config.get_api_url())
 
 
 def search(
