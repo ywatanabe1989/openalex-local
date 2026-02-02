@@ -40,8 +40,15 @@ server = [
 mcp = [
     "fastmcp>=0.1",
 ]
+docs = [
+    "sphinx>=7.0",
+    "sphinx-rtd-theme>=2.0",
+    "myst-parser>=2.0",
+    "sphinx-copybutton>=0.5",
+    "sphinx-autodoc-typehints>=1.25",
+]
 all = [
-    "openalex-local[server,mcp,dev]",
+    "openalex-local[server,mcp,dev,docs]",
 ]
 
 [project.scripts]
