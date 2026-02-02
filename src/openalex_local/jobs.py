@@ -19,8 +19,8 @@ _JOBS_DIR = _Path.home() / ".openalex_local" / "jobs"
 
 
 @_dataclass
-class Job:
-    """A batch job with progress tracking."""
+class _Job:
+    """A batch job with progress tracking (internal)."""
 
     id: str
     items: list[str]  # e.g., DOIs or OpenAlex IDs to process
@@ -57,12 +57,12 @@ class Job:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Job":
+    def from_dict(cls, data: dict) -> "_Job":
         return cls(**data)
 
 
-class JobQueue:
-    """Manages job persistence and execution."""
+class _JobQueue:
+    """Manages job persistence and execution (internal)."""
 
     def __init__(self, jobs_dir: _Optional[_Path] = None):
         self.jobs_dir = _Path(jobs_dir) if jobs_dir else _JOBS_DIR
@@ -71,30 +71,30 @@ class JobQueue:
     def _job_path(self, job_id: str) -> _Path:
         return self.jobs_dir / f"{job_id}.json"
 
-    def save(self, job: Job) -> None:
+    def save(self, job: _Job) -> None:
         """Save job to disk."""
         job.updated_at = _time.time()
         self._job_path(job.id).write_text(_json.dumps(job.to_dict(), indent=2))
 
-    def load(self, job_id: str) -> _Optional[Job]:
+    def load(self, job_id: str) -> _Optional[_Job]:
         """Load job from disk."""
         path = self._job_path(job_id)
         if not path.exists():
             return None
-        return Job.from_dict(_json.loads(path.read_text()))
+        return _Job.from_dict(_json.loads(path.read_text()))
 
-    def create(self, items: list[str], **metadata) -> Job:
+    def create(self, items: list[str], **metadata) -> _Job:
         """Create a new job."""
-        job = Job(id=str(_uuid.uuid4())[:8], items=items, metadata=metadata)
+        job = _Job(id=str(_uuid.uuid4())[:8], items=items, metadata=metadata)
         self.save(job)
         return job
 
-    def list(self) -> list[Job]:
+    def list(self) -> list[_Job]:
         """List all jobs."""
         jobs = []
         for path in self.jobs_dir.glob("*.json"):
             try:
-                jobs.append(Job.from_dict(_json.loads(path.read_text())))
+                jobs.append(_Job.from_dict(_json.loads(path.read_text())))
             except Exception:
                 continue
         return sorted(jobs, key=lambda j: j.created_at, reverse=True)
@@ -109,10 +109,10 @@ class JobQueue:
 
     def run(
         self,
-        job: Job,
+        job: _Job,
         processor: _Callable[[str], _Any],
-        on_progress: _Optional[_Callable[[Job], None]] = None,
-    ) -> Job:
+        on_progress: _Optional[_Callable[[_Job], None]] = None,
+    ) -> _Job:
         """Run a job with a processor function."""
         job.status = "running"
         self.save(job)
@@ -136,29 +136,29 @@ class JobQueue:
 _queue = None
 
 
-def _get_queue() -> JobQueue:
+def _get_queue() -> _JobQueue:
     global _queue
     if _queue is None:
-        _queue = JobQueue()
+        _queue = _JobQueue()
     return _queue
 
 
-def create(items: list[str], **metadata) -> Job:
+def create(items: list[str], **metadata) -> _Job:
     """Create a new job."""
     return _get_queue().create(items, **metadata)
 
 
-def get(job_id: str) -> _Optional[Job]:
+def get(job_id: str) -> _Optional[_Job]:
     """Get a job by ID."""
     return _get_queue().load(job_id)
 
 
-def list_jobs() -> list[Job]:
+def list_jobs() -> list[_Job]:
     """List all jobs."""
     return _get_queue().list()
 
 
-def run(job_id: str, processor: _Callable[[str], _Any]) -> Job:
+def run(job_id: str, processor: _Callable[[str], _Any]) -> _Job:
     """Run or resume a job."""
     job = get(job_id)
     if not job:

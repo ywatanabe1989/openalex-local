@@ -11,12 +11,12 @@ Example:
 __version__ = "0.3.0"
 
 from ._core import (
-    Config,
     SearchResult,
     Work,
     configure,
-    configure_http,
     count,
+    enrich,
+    enrich_ids,
     exists,
     get,
     get_many,
@@ -25,8 +25,14 @@ from ._core import (
     search,
 )
 
-# Jobs module (public)
+# Jobs module (public functions only)
 from . import jobs
+
+# Async module
+from . import aio
+
+# Cache module
+from . import cache
 
 __all__ = [
     # Core functions
@@ -36,14 +42,19 @@ __all__ = [
     "get_many",
     "exists",
     "info",
+    # Enrich functions
+    "enrich",
+    "enrich_ids",
     # Configuration
     "configure",
-    "configure_http",
     "get_mode",
-    # Classes
+    # Models
     "Work",
     "SearchResult",
-    "Config",
     # Jobs
     "jobs",
+    # Async
+    "aio",
+    # Cache
+    "cache",
 ]

@@ -203,6 +203,140 @@ class Work:
             "oa_url": self.oa_url,
         }
 
+    def citation(self, style: str = "apa") -> str:
+        """
+        Format work as a citation string.
+
+        Args:
+            style: Citation style - "apa" (default) or "bibtex"
+
+        Returns:
+            Formatted citation string
+
+        Example:
+            >>> work.citation()  # APA format
+            'Piwowar, H., & Priem, J. (2018). The state of OA. PeerJ.'
+            >>> work.citation("bibtex")  # BibTeX format
+            '@article{W2741809807, title={The state of OA}, ...}'
+        """
+        if style.lower() == "bibtex":
+            return self._citation_bibtex()
+        return self._citation_apa()
+
+    def _citation_apa(self) -> str:
+        """Format as APA citation."""
+        parts = []
+
+        # Authors
+        if self.authors:
+            if len(self.authors) == 1:
+                parts.append(self._format_author_apa(self.authors[0]))
+            elif len(self.authors) == 2:
+                parts.append(
+                    f"{self._format_author_apa(self.authors[0])} & "
+                    f"{self._format_author_apa(self.authors[1])}"
+                )
+            else:
+                formatted = [self._format_author_apa(a) for a in self.authors[:19]]
+                if len(self.authors) > 20:
+                    formatted = formatted[:19] + ["..."] + [
+                        self._format_author_apa(self.authors[-1])
+                    ]
+                parts.append(", ".join(formatted[:-1]) + ", & " + formatted[-1])
+
+        # Year
+        if self.year:
+            parts.append(f"({self.year})")
+
+        # Title
+        if self.title:
+            parts.append(f"{self.title}.")
+
+        # Source (journal)
+        if self.source:
+            source_part = f"*{self.source}*"
+            if self.volume:
+                source_part += f", *{self.volume}*"
+                if self.issue:
+                    source_part += f"({self.issue})"
+            if self.pages:
+                source_part += f", {self.pages}"
+            source_part += "."
+            parts.append(source_part)
+
+        # DOI
+        if self.doi:
+            parts.append(f"https://doi.org/{self.doi}")
+
+        return " ".join(parts)
+
+    def _format_author_apa(self, name: str) -> str:
+        """Format author name for APA (Last, F. M.)."""
+        parts = name.split()
+        if len(parts) == 1:
+            return parts[0]
+        last = parts[-1]
+        initials = " ".join(f"{p[0]}." for p in parts[:-1] if p)
+        return f"{last}, {initials}"
+
+    def _citation_bibtex(self) -> str:
+        """Format as BibTeX entry."""
+        # Determine entry type
+        entry_type = "article"
+        if self.type:
+            type_map = {
+                "book": "book",
+                "book-chapter": "incollection",
+                "proceedings": "inproceedings",
+                "proceedings-article": "inproceedings",
+                "dissertation": "phdthesis",
+                "report": "techreport",
+            }
+            entry_type = type_map.get(self.type, "article")
+
+        # Use OpenAlex ID as citation key
+        key = self.openalex_id or "unknown"
+
+        lines = [f"@{entry_type}{{{key},"]
+
+        if self.title:
+            lines.append(f"  title = {{{self.title}}},")
+
+        if self.authors:
+            author_str = " and ".join(self.authors)
+            lines.append(f"  author = {{{author_str}}},")
+
+        if self.year:
+            lines.append(f"  year = {{{self.year}}},")
+
+        if self.source:
+            if entry_type == "article":
+                lines.append(f"  journal = {{{self.source}}},")
+            elif entry_type in ("incollection", "inproceedings"):
+                lines.append(f"  booktitle = {{{self.source}}},")
+
+        if self.volume:
+            lines.append(f"  volume = {{{self.volume}}},")
+
+        if self.issue:
+            lines.append(f"  number = {{{self.issue}}},")
+
+        if self.pages:
+            lines.append(f"  pages = {{{self.pages}}},")
+
+        if self.publisher:
+            lines.append(f"  publisher = {{{self.publisher}}},")
+
+        if self.doi:
+            lines.append(f"  doi = {{{self.doi}}},")
+
+        if self.oa_url:
+            lines.append(f"  url = {{{self.oa_url}}},")
+
+        lines.append("}")
+
+        return "\n".join(lines)
+
 
 @dataclass
 class SearchResult:

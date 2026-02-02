@@ -9,6 +9,26 @@ import click
 from .. import __version__
 
 
+class AliasedGroup(click.Group):
+    """Click group with command aliases."""
+
+    ALIASES = {
+        "s": "search",
+        "doi": "search-by-doi",
+        "st": "status",
+    }
+
+    def get_command(self, ctx, cmd_name):
+        # Check for alias
+        cmd_name = self.ALIASES.get(cmd_name, cmd_name)
+        return super().get_command(ctx, cmd_name)
+
+    def resolve_command(self, ctx, args):
+        # Resolve alias before normal command resolution
+        _, cmd_name, args = super().resolve_command(ctx, args)
+        return _, cmd_name, args
+
+
 def _print_recursive_help(ctx, param, value):
     """Callback for --help-recursive flag."""
     if not value or ctx.resilient_parsing:
@@ -35,7 +55,7 @@ def _print_recursive_help(ctx, param, value):
     ctx.exit(0)
 
 
-@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+@click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(__version__, "--version")
 @click.option("--http", is_flag=True, help="Use HTTP API instead of direct database")
 @click.option("--api-url", help="API URL for http mode (default: auto-detect)")
@@ -66,7 +86,7 @@ def cli(ctx, http, api_url):
     ctx.ensure_object(dict)
 
     if http or api_url:
-        from .. import configure_http
+        from .._core.api import configure_http
 
         configure_http(api_url or "http://localhost:31292")
 
@@ -144,7 +164,9 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, as_json):
 @cli.command("search-by-doi")
 @click.argument("doi")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def search_by_doi_cmd(doi, as_json):
+@click.option("--citation", is_flag=True, help="Output as APA citation")
+@click.option("--bibtex", is_flag=True, help="Output as BibTeX entry")
+def search_by_doi_cmd(doi, as_json, citation, bibtex):
     """Search for a work by DOI."""
     from .. import get
 
@@ -157,6 +179,14 @@ def search_by_doi_cmd(doi, as_json):
     if work is None:
         click.secho(f"Not found: {doi}", fg="red", err=True)
         sys.exit(1)
+
+    if citation:
+        click.echo(work.citation("apa"))
+        return
+
+    if bibtex:
+        click.echo(work.citation("bibtex"))
+        return
 
     if as_json:
         click.echo(json.dumps(work.to_dict(), indent=2))
@@ -217,6 +247,11 @@ def status_cmd(as_json):
 from .mcp import mcp
 
 cli.add_command(mcp)
+
+# Register cache subcommand group
+from .cli_cache import cache_group
+
+cli.add_command(cache_group)
 
 
 @cli.command("relay")
