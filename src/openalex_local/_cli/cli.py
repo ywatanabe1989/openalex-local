@@ -98,9 +98,30 @@ def cli(ctx, http, api_url):
 @click.option("-a", "--abstracts", is_flag=True, help="Show abstracts")
 @click.option("-A", "--authors", is_flag=True, help="Show authors")
 @click.option("--concepts", is_flag=True, help="Show concepts/topics")
-@click.option("-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor")
+@click.option(
+    "-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor"
+)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def search_cmd(query, number, offset, abstracts, authors, concepts, with_if, as_json):
+@click.option("--save", "save_path", type=click.Path(), help="Save results to file")
+@click.option(
+    "--format",
+    "save_format",
+    type=click.Choice(["text", "json", "bibtex"]),
+    default="json",
+    help="Output format for --save (default: json)",
+)
+def search_cmd(
+    query,
+    number,
+    offset,
+    abstracts,
+    authors,
+    concepts,
+    with_if,
+    as_json,
+    save_path,
+    save_format,
+):
     """Search for works by title, abstract, or authors."""
     from .. import search
     from .._core.db import get_db
@@ -138,14 +159,34 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, with_if, as_
                         metrics = if_cache[work.issn]
                         work.impact_factor = metrics.get("impact_factor")
                         work.source_h_index = metrics.get("source_h_index")
-                        work.source_cited_by_count = metrics.get("source_cited_by_count")
+                        work.source_cited_by_count = metrics.get(
+                            "source_cited_by_count"
+                        )
             else:
                 click.secho(
                     "Warning: sources table not found. Run: python scripts/database/04_build_sources_table.py",
-                    fg="yellow", err=True
+                    fg="yellow",
+                    err=True,
                 )
         except Exception as e:
-            click.secho(f"Warning: Could not fetch impact factors: {e}", fg="yellow", err=True)
+            click.secho(
+                f"Warning: Could not fetch impact factors: {e}", fg="yellow", err=True
+            )
+
+    # Save to file if requested
+    if save_path:
+        from .._core.export import save as _save
+
+        try:
+            saved = _save(
+                results, save_path, format=save_format, include_abstract=abstracts
+            )
+            click.secho(
+                f"Saved {len(results)} results to {saved}", fg="green", err=True
+            )
+        except Exception as e:
+            click.secho(f"Error saving: {e}", fg="red", err=True)
+            sys.exit(1)
 
     if as_json:
         output = {
@@ -165,12 +206,14 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, with_if, as_
     for i, work in enumerate(results.works, 1):
         click.secho(f"{i}. {work.title} ({work.year})", fg="cyan", bold=True)
         click.echo(f"   DOI: {work.doi or 'N/A'}")
-        journal_info = work.source or 'N/A'
+        journal_info = work.source or "N/A"
         if with_if and work.impact_factor is not None:
             journal_info += f" (IF: {work.impact_factor:.2f})"
         click.echo(f"   Journal: {journal_info}")
         if with_if:
-            click.echo(f"   Citations: {work.cited_by_count or 0} (journal total: {work.source_cited_by_count or 'N/A'})")
+            click.echo(
+                f"   Citations: {work.cited_by_count or 0} (journal total: {work.source_cited_by_count or 'N/A'})"
+            )
 
         if authors and work.authors:
             author_str = ", ".join(work.authors[:5])
@@ -196,7 +239,15 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, with_if, as_
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 @click.option("--citation", is_flag=True, help="Output as APA citation")
 @click.option("--bibtex", is_flag=True, help="Output as BibTeX entry")
-def search_by_doi_cmd(doi, as_json, citation, bibtex):
+@click.option("--save", "save_path", type=click.Path(), help="Save result to file")
+@click.option(
+    "--format",
+    "save_format",
+    type=click.Choice(["text", "json", "bibtex"]),
+    default="json",
+    help="Output format for --save (default: json)",
+)
+def search_by_doi_cmd(doi, as_json, citation, bibtex, save_path, save_format):
     """Search for a work by DOI."""
     from .. import get
 
@@ -209,6 +260,17 @@ def search_by_doi_cmd(doi, as_json, citation, bibtex):
     if work is None:
         click.secho(f"Not found: {doi}", fg="red", err=True)
         sys.exit(1)
+
+    # Save to file if requested
+    if save_path:
+        from .._core.export import save as _save
+
+        try:
+            saved = _save(work, save_path, format=save_format)
+            click.secho(f"Saved to {saved}", fg="green", err=True)
+        except Exception as e:
+            click.secho(f"Error saving: {e}", fg="red", err=True)
+            sys.exit(1)
 
     if citation:
         click.echo(work.citation("apa"))
@@ -273,9 +335,14 @@ def status_cmd(as_json):
         click.echo(f"FTS Indexed: {status['fts_indexed']:,}")
 
     if status.get("has_sources"):
-        click.echo(f"Sources/Journals: {status.get('sources_count', 0):,} (impact factors available)")
+        click.echo(
+            f"Sources/Journals: {status.get('sources_count', 0):,} (impact factors available)"
+        )
     else:
-        click.secho("Sources: Not indexed (run scripts/database/04_build_sources_table.py for -if support)", fg="yellow")
+        click.secho(
+            "Sources: Not indexed (run scripts/database/04_build_sources_table.py for -if support)",
+            fg="yellow",
+        )
 
 
 # Register MCP subcommand group

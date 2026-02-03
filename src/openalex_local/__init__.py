@@ -11,6 +11,7 @@ Example:
 __version__ = "0.3.0"
 
 from ._core import (
+    SUPPORTED_FORMATS,
     SearchResult,
     Work,
     configure,
@@ -22,6 +23,7 @@ from ._core import (
     get_many,
     get_mode,
     info,
+    save,
     search,
 )
 
@@ -51,6 +53,9 @@ __all__ = [
     # Models
     "Work",
     "SearchResult",
+    # Export
+    "save",
+    "SUPPORTED_FORMATS",
     # Jobs
     "jobs",
     # Async

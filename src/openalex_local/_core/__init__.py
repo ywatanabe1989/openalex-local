@@ -15,6 +15,7 @@ from .api import (
     info,
     search,
 )
+from .export import SUPPORTED_FORMATS, save
 
 __all__ = [
     # Core functions
@@ -33,6 +34,9 @@ __all__ = [
     # Models
     "Work",
     "SearchResult",
+    # Export
+    "save",
+    "SUPPORTED_FORMATS",
 ]
 
 # EOF

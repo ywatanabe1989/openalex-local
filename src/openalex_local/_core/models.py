@@ -249,9 +249,11 @@ class Work:
             else:
                 formatted = [self._format_author_apa(a) for a in self.authors[:19]]
                 if len(self.authors) > 20:
-                    formatted = formatted[:19] + ["..."] + [
-                        self._format_author_apa(self.authors[-1])
-                    ]
+                    formatted = (
+                        formatted[:19]
+                        + ["..."]
+                        + [self._format_author_apa(self.authors[-1])]
+                    )
                 parts.append(", ".join(formatted[:-1]) + ", & " + formatted[-1])
 
         # Year
@@ -347,6 +349,38 @@ class Work:
 
         return "\n".join(lines)
 
+    def to_text(self, include_abstract: bool = False) -> str:
+        """Format as human-readable text.
+
+        Args:
+            include_abstract: Include abstract in output
+
+        Returns:
+            Formatted text string
+        """
+        from .export import work_to_text
+
+        return work_to_text(self, include_abstract=include_abstract)
+
+    def save(self, path: str, format: str = "json") -> str:
+        """Save work to file.
+
+        Args:
+            path: Output file path
+            format: Output format ("text", "json", "bibtex")
+
+        Returns:
+            Path to saved file
+
+        Examples:
+            >>> work = get("W2741809807")
+            >>> work.save("paper.json")
+            >>> work.save("paper.bib", format="bibtex")
+        """
+        from .export import save
+
+        return save(self, path, format=format)
+
 
 @dataclass
 class SearchResult:
@@ -373,3 +407,26 @@ class SearchResult:
 
     def __getitem__(self, idx):
         return self.works[idx]
+
+    def save(
+        self, path: str, format: str = "json", include_abstract: bool = True
+    ) -> str:
+        """Save search results to file.
+
+        Args:
+            path: Output file path
+            format: Output format ("text", "json", "bibtex")
+            include_abstract: Include abstracts in text format
+
+        Returns:
+            Path to saved file
+
+        Examples:
+            >>> results = search("machine learning", limit=10)
+            >>> results.save("results.json")
+            >>> results.save("results.bib", format="bibtex")
+            >>> results.save("results.txt", format="text")
+        """
+        from .export import save
+
+        return save(self, path, format=format, include_abstract=include_abstract)
