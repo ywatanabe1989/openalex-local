@@ -8,7 +8,7 @@ Example:
     >>> work = get("10.1038/nature12373")  # or DOI
 """
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 from ._core import (
     SUPPORTED_FORMATS,
