@@ -98,10 +98,12 @@ def cli(ctx, http, api_url):
 @click.option("-a", "--abstracts", is_flag=True, help="Show abstracts")
 @click.option("-A", "--authors", is_flag=True, help="Show authors")
 @click.option("--concepts", is_flag=True, help="Show concepts/topics")
+@click.option("-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def search_cmd(query, number, offset, abstracts, authors, concepts, as_json):
+def search_cmd(query, number, offset, abstracts, authors, concepts, with_if, as_json):
     """Search for works by title, abstract, or authors."""
     from .. import search
+    from .._core.db import get_db
 
     try:
         results = search(query, limit=number, offset=offset)
@@ -122,6 +124,29 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, as_json):
         click.secho(f"Error: {e}", fg="red", err=True)
         sys.exit(1)
 
+    # Enrich with impact factor data if requested
+    if_cache = {}
+    if with_if:
+        try:
+            db = get_db()
+            if db.has_sources_table():
+                for work in results.works:
+                    if work.issn and work.issn not in if_cache:
+                        metrics = db.get_source_metrics(work.issn)
+                        if_cache[work.issn] = metrics
+                    if work.issn and if_cache.get(work.issn):
+                        metrics = if_cache[work.issn]
+                        work.impact_factor = metrics.get("impact_factor")
+                        work.source_h_index = metrics.get("source_h_index")
+                        work.source_cited_by_count = metrics.get("source_cited_by_count")
+            else:
+                click.secho(
+                    "Warning: sources table not found. Run: python scripts/database/04_build_sources_table.py",
+                    fg="yellow", err=True
+                )
+        except Exception as e:
+            click.secho(f"Warning: Could not fetch impact factors: {e}", fg="yellow", err=True)
+
     if as_json:
         output = {
             "query": query,
@@ -140,7 +165,12 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, as_json):
     for i, work in enumerate(results.works, 1):
         click.secho(f"{i}. {work.title} ({work.year})", fg="cyan", bold=True)
         click.echo(f"   DOI: {work.doi or 'N/A'}")
-        click.echo(f"   Journal: {work.source or 'N/A'}")
+        journal_info = work.source or 'N/A'
+        if with_if and work.impact_factor is not None:
+            journal_info += f" (IF: {work.impact_factor:.2f})"
+        click.echo(f"   Journal: {journal_info}")
+        if with_if:
+            click.echo(f"   Citations: {work.cited_by_count or 0} (journal total: {work.source_cited_by_count or 'N/A'})")
 
         if authors and work.authors:
             author_str = ", ".join(work.authors[:5])
@@ -241,6 +271,11 @@ def status_cmd(as_json):
 
     if "fts_indexed" in status:
         click.echo(f"FTS Indexed: {status['fts_indexed']:,}")
+
+    if status.get("has_sources"):
+        click.echo(f"Sources/Journals: {status.get('sources_count', 0):,} (impact factors available)")
+    else:
+        click.secho("Sources: Not indexed (run scripts/database/04_build_sources_table.py for -if support)", fg="yellow")
 
 
 # Register MCP subcommand group

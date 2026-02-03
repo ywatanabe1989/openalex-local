@@ -50,6 +50,10 @@ class Work:
     referenced_works: List[str] = field(default_factory=list)
     is_oa: bool = False
     oa_url: Optional[str] = None
+    # Source/journal metrics (from sources table)
+    impact_factor: Optional[float] = None  # 2yr_mean_citedness
+    source_h_index: Optional[int] = None
+    source_cited_by_count: Optional[int] = None
 
     @classmethod
     def from_openalex(cls, data: dict) -> "Work":
@@ -177,6 +181,9 @@ class Work:
             referenced_works=data.get("referenced_works", []),
             is_oa=bool(data.get("is_oa", False)),
             oa_url=data.get("oa_url"),
+            impact_factor=data.get("impact_factor"),
+            source_h_index=data.get("source_h_index"),
+            source_cited_by_count=data.get("source_cited_by_count"),
         )
 
     def to_dict(self) -> dict:
@@ -201,6 +208,9 @@ class Work:
             "referenced_works": self.referenced_works,
             "is_oa": self.is_oa,
             "oa_url": self.oa_url,
+            "impact_factor": self.impact_factor,
+            "source_h_index": self.source_h_index,
+            "source_cited_by_count": self.source_cited_by_count,
         }
 
     def citation(self, style: str = "apa") -> str:

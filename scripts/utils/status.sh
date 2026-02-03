@@ -255,6 +255,86 @@ else
 fi
 
 # ============================================================
+# SOURCES & CITATIONS (Impact Factor)
+# ============================================================
+header "IMPACT FACTOR DATA"
+
+if [[ -f "$DB_PATH" ]] && command -v sqlite3 &>/dev/null; then
+    # Sources table
+    if sqlite3 "$DB_PATH" "SELECT 1 FROM sqlite_master WHERE name='sources';" 2>/dev/null | grep -q 1; then
+        SOURCES_COUNT=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM sources;" 2>/dev/null || echo "?")
+        echo -e "${GREEN}${CHECK}${NC} Sources table: ${SOURCES_COUNT} journals"
+    else
+        echo -e "${INFO} Sources table: not built"
+        echo -e "    ${DIM}Run: make build-sources (fast, ~30 sec)${NC}"
+    fi
+
+    # Citations table
+    if sqlite3 "$DB_PATH" "SELECT 1 FROM sqlite_master WHERE name='citations';" 2>/dev/null | grep -q 1; then
+        CITATIONS_COUNT=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM citations;" 2>/dev/null || echo "?")
+        echo -e "${GREEN}${CHECK}${NC} Citations table: ${CITATIONS_COUNT} rows"
+    else
+        # Check if build is in progress
+        if sqlite3 "$DB_PATH" "SELECT 1 FROM sqlite_master WHERE name='_citations_build_progress';" 2>/dev/null | grep -q 1; then
+            PROGRESS=$(sqlite3 "$DB_PATH" "SELECT last_rowid, records_processed, citations_inserted FROM _citations_build_progress ORDER BY last_rowid DESC LIMIT 1;" 2>/dev/null)
+            if [[ -n "$PROGRESS" ]]; then
+                LAST_ROWID=$(echo "$PROGRESS" | cut -d'|' -f1)
+                RECORDS=$(echo "$PROGRESS" | cut -d'|' -f2)
+                CITS=$(echo "$PROGRESS" | cut -d'|' -f3)
+                MAX_ROWID=$(sqlite3 "$DB_PATH" "SELECT MAX(rowid) FROM works;" 2>/dev/null || echo "?")
+                if [[ "$MAX_ROWID" != "?" ]] && [[ "$MAX_ROWID" -gt 0 ]]; then
+                    PCT=$((LAST_ROWID * 100 / MAX_ROWID))
+                    echo -e "${YELLOW}${RUN}${NC} Citations table: building... ${PCT}% (${CITS} citations)"
+                else
+                    echo -e "${YELLOW}${RUN}${NC} Citations table: building... (${CITS} citations)"
+                fi
+            fi
+        else
+            echo -e "${INFO} Citations table: not built"
+            echo -e "    ${DIM}Run: make build-citations (slow, ~50-70h)${NC}"
+        fi
+    fi
+
+    # Citations indexes
+    CITATIONS_INDEXES=$(sqlite3 "$DB_PATH" ".indices citations" 2>/dev/null | wc -l || echo "0")
+    if [[ "$CITATIONS_INDEXES" -gt 0 ]]; then
+        INDEXES_LIST=$(sqlite3 "$DB_PATH" ".indices citations" 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+        if [[ "$CITATIONS_INDEXES" -ge 3 ]]; then
+            echo -e "${GREEN}${CHECK}${NC} Citations indexes: ${CITATIONS_INDEXES}/3 complete"
+        else
+            echo -e "${YELLOW}${RUN}${NC} Citations indexes: ${CITATIONS_INDEXES}/3 (${INDEXES_LIST})"
+        fi
+    fi
+
+    # Works IF indexes (issn, issn_year)
+    WORKS_ISSN_IDX=$(sqlite3 "$DB_PATH" "SELECT 1 FROM sqlite_master WHERE name='idx_works_issn_year';" 2>/dev/null || echo "")
+    if [[ -n "$WORKS_ISSN_IDX" ]]; then
+        echo -e "${GREEN}${CHECK}${NC} Works IF indexes: built"
+    else
+        # Check if we have citations but not works indexes
+        if sqlite3 "$DB_PATH" "SELECT 1 FROM sqlite_master WHERE name='citations';" 2>/dev/null | grep -q 1; then
+            echo -e "${YELLOW}${WARN}${NC} Works IF indexes: not built"
+            echo -e "    ${DIM}Run: make build-if-indexes${NC}"
+        fi
+    fi
+
+    # Show active build sessions
+    INDEX_SCREEN=$(screen -ls 2>/dev/null | grep -E "openalex-(build-citations|create-indexes|build-if-indexes|if-indexes)" || true)
+    if [[ -n "$INDEX_SCREEN" ]]; then
+        echo ""
+        echo -e "${YELLOW}${RUN}${NC} Index build active:"
+        while IFS= read -r line; do
+            SESSION=$(echo "$line" | awk '{print $1}' | cut -d. -f2)
+            echo -e "    ${DIM}${SESSION}${NC}"
+        done <<< "$INDEX_SCREEN"
+        echo -e "    ${DIM}Monitor: tail -f logs/create_indexes.log${NC}"
+        echo -e "    ${DIM}         tail -f logs/build_if_indexes.log${NC}"
+    fi
+else
+    echo -e "${INFO} Database not built yet"
+fi
+
+# ============================================================
 # QUICK REFERENCE
 # ============================================================
 header "QUICK REFERENCE"
@@ -272,6 +352,11 @@ echo ""
 echo -e "${CYAN}Build Commands:${NC}"
 echo -e "  ${DIM}make build-db${NC}          Build SQLite database"
 echo -e "  ${DIM}make build-fts${NC}         Build full-text search index"
+echo ""
+echo -e "${CYAN}Impact Factor (Optional):${NC}"
+echo -e "  ${DIM}make build-sources${NC}     Journal metadata (~30 sec)"
+echo -e "  ${DIM}make build-citations${NC}   Citation graph (~3-4h data)"
+echo -e "  ${DIM}make build-if-indexes${NC}  All IF indexes (~8-10h)"
 
 # ============================================================
 # NOTIFICATIONS

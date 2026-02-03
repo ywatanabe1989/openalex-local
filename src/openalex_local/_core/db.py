@@ -120,6 +120,59 @@ class Database:
 
         return result
 
+    def get_source_metrics(self, issn: str) -> Optional[Dict[str, Any]]:
+        """
+        Get source/journal metrics by ISSN.
+
+        Args:
+            issn: Journal ISSN
+
+        Returns:
+            Dictionary with impact_factor, h_index, cited_by_count or None
+        """
+        if not issn:
+            return None
+
+        # Try lookup via issn_lookup table first (fast)
+        row = self.fetchone(
+            """
+            SELECT s.two_year_mean_citedness as impact_factor,
+                   s.h_index as source_h_index,
+                   s.cited_by_count as source_cited_by_count,
+                   s.display_name as source_name
+            FROM issn_lookup l
+            JOIN sources s ON l.source_id = s.id
+            WHERE l.issn = ?
+            """,
+            (issn,),
+        )
+        if row:
+            return dict(row)
+
+        # Fallback: search in sources.issns JSON field
+        row = self.fetchone(
+            """
+            SELECT two_year_mean_citedness as impact_factor,
+                   h_index as source_h_index,
+                   cited_by_count as source_cited_by_count,
+                   display_name as source_name
+            FROM sources
+            WHERE issn_l = ? OR issns LIKE ?
+            """,
+            (issn, f'%"{issn}"%'),
+        )
+        if row:
+            return dict(row)
+
+        return None
+
+    def has_sources_table(self) -> bool:
+        """Check if sources table exists."""
+        row = self.fetchone(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='sources'"
+        )
+        return row is not None
+
 
 # Singleton connection for convenience functions
 _db: Optional[Database] = None
