@@ -208,7 +208,9 @@ class Work:
             "referenced_works": self.referenced_works,
             "is_oa": self.is_oa,
             "oa_url": self.oa_url,
-            "impact_factor": self.impact_factor,
+            "impact_factor": round(self.impact_factor, 1)
+            if self.impact_factor is not None
+            else None,
             "source_h_index": self.source_h_index,
             "source_cited_by_count": self.source_cited_by_count,
         }
