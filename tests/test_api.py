@@ -73,18 +73,28 @@ class TestGetMode:
         mode = get_mode()
         assert mode in ("db", "http")
 
-    def test_default_mode_is_db(self, reset_config):
-        """Test default mode is db when no API URL is set."""
+    def test_default_mode_is_db_when_db_exists(self, reset_config):
+        """Test default mode is db when database file exists."""
         import os
-        # Temporarily remove API URL env var if set
+        import tempfile
+
+        # Clear env vars
         old_url = os.environ.pop("OPENALEX_LOCAL_API_URL", None)
+        old_mode = os.environ.pop("OPENALEX_LOCAL_MODE", None)
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            temp_path = f.name
         try:
+            os.environ["OPENALEX_LOCAL_DB"] = temp_path
             Config.reset()
             mode = get_mode()
             assert mode == "db"
         finally:
+            os.unlink(temp_path)
+            os.environ.pop("OPENALEX_LOCAL_DB", None)
             if old_url:
                 os.environ["OPENALEX_LOCAL_API_URL"] = old_url
+            if old_mode:
+                os.environ["OPENALEX_LOCAL_MODE"] = old_mode
 
 
 class TestSearchResult:
@@ -112,7 +122,9 @@ class TestSearchResult:
     def test_search_result_attributes(self):
         """Test SearchResult attributes."""
         works = [Work(openalex_id="W1")]
-        result = SearchResult(works=works, total=50, query="machine learning", elapsed_ms=15.5)
+        result = SearchResult(
+            works=works, total=50, query="machine learning", elapsed_ms=15.5
+        )
         assert result.total == 50
         assert result.query == "machine learning"
         assert result.elapsed_ms == 15.5

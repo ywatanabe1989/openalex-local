@@ -17,7 +17,11 @@ class TestConfig:
         Config.reset()
         # Clear environment variables
         self._original_env = {}
-        for key in ["OPENALEX_LOCAL_DB", "OPENALEX_LOCAL_API_URL"]:
+        for key in [
+            "OPENALEX_LOCAL_DB",
+            "OPENALEX_LOCAL_API_URL",
+            "OPENALEX_LOCAL_MODE",
+        ]:
             self._original_env[key] = os.environ.pop(key, None)
 
     def teardown_method(self):
@@ -27,9 +31,21 @@ class TestConfig:
             if value is not None:
                 os.environ[key] = value
 
-    def test_get_mode_default_is_db(self):
-        """Test that default mode is db."""
-        assert Config.get_mode() == "db"
+    def test_get_mode_default_is_auto(self):
+        """Test that default internal mode is auto."""
+        assert Config._mode == "auto"
+
+    def test_get_mode_returns_db_when_db_exists(self):
+        """Test that mode returns db when database file exists."""
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            temp_path = f.name
+        try:
+            os.environ["OPENALEX_LOCAL_DB"] = temp_path
+            Config.reset()
+            assert Config.get_mode() == "db"
+        finally:
+            os.unlink(temp_path)
+            os.environ.pop("OPENALEX_LOCAL_DB", None)
 
     def test_get_mode_http_when_api_url_env_set(self):
         """Test that mode is http when OPENALEX_LOCAL_API_URL is set."""
@@ -74,7 +90,7 @@ class TestConfig:
         Config.reset()
         assert Config._db_path is None
         assert Config._api_url is None
-        assert Config._mode is None
+        assert Config._mode == "auto"
 
 
 class TestGetDbPath:
