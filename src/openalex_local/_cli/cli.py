@@ -208,7 +208,7 @@ def search_cmd(
         click.echo(f"   DOI: {work.doi or 'N/A'}")
         journal_info = work.source or "N/A"
         if with_if and work.impact_factor is not None:
-            journal_info += f" (IF: {work.impact_factor:.2f})"
+            journal_info += f" (IF: {work.impact_factor:.1f})"
         click.echo(f"   Journal: {journal_info}")
         if with_if:
             click.echo(
