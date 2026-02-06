@@ -211,7 +211,7 @@ def create_database(works: list, db_path: Path):
 
         cursor.execute(
             """
-            INSERT INTO works (
+            INSERT OR IGNORE INTO works (
                 openalex_id, doi, title, abstract, authors, year, source,
                 issn, volume, issue, pages, publisher, type, concepts, topics,
                 cited_by_count, referenced_works, is_oa, oa_url

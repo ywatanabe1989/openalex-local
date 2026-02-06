@@ -45,7 +45,12 @@ def mcp():
     envvar="OPENALEX_LOCAL_MCP_PORT",
     help="Port for HTTP/SSE transport",
 )
-def mcp_start(transport: str, host: str, port: int):
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Kill existing process using the port if any (http/sse only)",
+)
+def mcp_start(transport: str, host: str, port: int, force: bool):
     """Start the MCP server.
 
     \b
@@ -79,7 +84,7 @@ def mcp_start(transport: str, host: str, port: int):
         }
       }
     """
-    run_mcp_server(transport, host, port)
+    run_mcp_server(transport, host, port, force)
 
 
 @mcp.command("doctor", context_settings=CONTEXT_SETTINGS)
@@ -190,7 +195,7 @@ def mcp_list_tools():
     click.echo("     - identifiers (list[str]): List of OpenAlex IDs or DOIs")
 
 
-def run_mcp_server(transport: str, host: str, port: int):
+def run_mcp_server(transport: str, host: str, port: int, force: bool = False):
     """Internal function to run MCP server."""
     try:
         from .mcp_server import run_server
@@ -202,7 +207,7 @@ def run_mcp_server(transport: str, host: str, port: int):
         )
         sys.exit(1)
 
-    run_server(transport=transport, host=host, port=port)
+    run_server(transport=transport, host=host, port=port, force=force)
 
 
 def register_mcp_commands(cli_group):

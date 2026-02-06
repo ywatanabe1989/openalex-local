@@ -120,6 +120,84 @@ class Database:
 
         return result
 
+    def get_source_metrics(self, issn: str) -> Optional[Dict[str, Any]]:
+        """
+        Get source/journal metrics by ISSN.
+
+        Uses SciTeX Impact Factor (OpenAlex) from precomputed table when available,
+        combined with source metrics in a single optimized query.
+
+        Args:
+            issn: Journal ISSN
+
+        Returns:
+            Dictionary with scitex_if, h_index, cited_by_count or None
+        """
+        if not issn:
+            return None
+
+        # Single optimized query with LEFT JOIN to get both SciTeX IF and source metrics
+        row = self.fetchone(
+            """
+            SELECT
+                jif.impact_factor as scitex_if,
+                jif.year as if_year,
+                s.h_index as source_h_index,
+                s.cited_by_count as source_cited_by_count,
+                COALESCE(s.display_name, jif.journal_name) as source_name
+            FROM issn_lookup l
+            JOIN sources s ON l.source_id = s.id
+            LEFT JOIN (
+                SELECT issn, impact_factor, journal_name, year
+                FROM journal_impact_factors
+                WHERE issn = ?
+                ORDER BY year DESC
+                LIMIT 1
+            ) jif ON jif.issn = l.issn
+            WHERE l.issn = ?
+            """,
+            (issn, issn),
+        )
+        if row:
+            return dict(row)
+
+        # Fallback: check journal_impact_factors only (journal may not be in sources)
+        row = self.fetchone(
+            """
+            SELECT impact_factor as scitex_if, journal_name as source_name, year as if_year
+            FROM journal_impact_factors
+            WHERE issn = ?
+            ORDER BY year DESC
+            LIMIT 1
+            """,
+            (issn,),
+        )
+        if row:
+            return dict(row)
+
+        # Final fallback: search in sources.issns JSON field
+        row = self.fetchone(
+            """
+            SELECT h_index as source_h_index,
+                   cited_by_count as source_cited_by_count,
+                   display_name as source_name
+            FROM sources
+            WHERE issn_l = ? OR issns LIKE ?
+            """,
+            (issn, f'%"{issn}"%'),
+        )
+        if row:
+            return dict(row)
+
+        return None
+
+    def has_sources_table(self) -> bool:
+        """Check if sources table exists."""
+        row = self.fetchone(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='sources'"
+        )
+        return row is not None
+
 
 # Singleton connection for convenience functions
 _db: Optional[Database] = None

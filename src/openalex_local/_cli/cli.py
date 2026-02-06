@@ -98,10 +98,33 @@ def cli(ctx, http, api_url):
 @click.option("-a", "--abstracts", is_flag=True, help="Show abstracts")
 @click.option("-A", "--authors", is_flag=True, help="Show authors")
 @click.option("--concepts", is_flag=True, help="Show concepts/topics")
+@click.option(
+    "-if", "--impact-factor", "with_if", is_flag=True, help="Show journal impact factor"
+)
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def search_cmd(query, number, offset, abstracts, authors, concepts, as_json):
+@click.option("--save", "save_path", type=click.Path(), help="Save results to file")
+@click.option(
+    "--format",
+    "save_format",
+    type=click.Choice(["text", "json", "bibtex"]),
+    default="json",
+    help="Output format for --save (default: json)",
+)
+def search_cmd(
+    query,
+    number,
+    offset,
+    abstracts,
+    authors,
+    concepts,
+    with_if,
+    as_json,
+    save_path,
+    save_format,
+):
     """Search for works by title, abstract, or authors."""
     from .. import search
+    from .._core.db import get_db
 
     try:
         results = search(query, limit=number, offset=offset)
@@ -122,6 +145,49 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, as_json):
         click.secho(f"Error: {e}", fg="red", err=True)
         sys.exit(1)
 
+    # Enrich with impact factor data if requested
+    if_cache = {}
+    if with_if:
+        try:
+            db = get_db()
+            if db.has_sources_table():
+                for work in results.works:
+                    if work.issn and work.issn not in if_cache:
+                        metrics = db.get_source_metrics(work.issn)
+                        if_cache[work.issn] = metrics
+                    if work.issn and if_cache.get(work.issn):
+                        metrics = if_cache[work.issn]
+                        work.scitex_if = metrics.get("scitex_if")
+                        work.source_h_index = metrics.get("source_h_index")
+                        work.source_cited_by_count = metrics.get(
+                            "source_cited_by_count"
+                        )
+            else:
+                click.secho(
+                    "Warning: sources table not found. Run: python scripts/database/04_build_sources_table.py",
+                    fg="yellow",
+                    err=True,
+                )
+        except Exception as e:
+            click.secho(
+                f"Warning: Could not fetch impact factors: {e}", fg="yellow", err=True
+            )
+
+    # Save to file if requested
+    if save_path:
+        from .._core.export import save as _save
+
+        try:
+            saved = _save(
+                results, save_path, format=save_format, include_abstract=abstracts
+            )
+            click.secho(
+                f"Saved {len(results)} results to {saved}", fg="green", err=True
+            )
+        except Exception as e:
+            click.secho(f"Error saving: {e}", fg="red", err=True)
+            sys.exit(1)
+
     if as_json:
         output = {
             "query": query,
@@ -140,7 +206,14 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, as_json):
     for i, work in enumerate(results.works, 1):
         click.secho(f"{i}. {work.title} ({work.year})", fg="cyan", bold=True)
         click.echo(f"   DOI: {work.doi or 'N/A'}")
-        click.echo(f"   Journal: {work.source or 'N/A'}")
+        journal_info = work.source or "N/A"
+        if with_if and work.scitex_if is not None:
+            journal_info += f" (SciTeX IF: {work.scitex_if:.1f})"
+        click.echo(f"   Journal: {journal_info}")
+        if with_if:
+            click.echo(
+                f"   Citations: {work.cited_by_count or 0} (journal total: {work.source_cited_by_count or 'N/A'})"
+            )
 
         if authors and work.authors:
             author_str = ", ".join(work.authors[:5])
@@ -166,7 +239,15 @@ def search_cmd(query, number, offset, abstracts, authors, concepts, as_json):
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 @click.option("--citation", is_flag=True, help="Output as APA citation")
 @click.option("--bibtex", is_flag=True, help="Output as BibTeX entry")
-def search_by_doi_cmd(doi, as_json, citation, bibtex):
+@click.option("--save", "save_path", type=click.Path(), help="Save result to file")
+@click.option(
+    "--format",
+    "save_format",
+    type=click.Choice(["text", "json", "bibtex"]),
+    default="json",
+    help="Output format for --save (default: json)",
+)
+def search_by_doi_cmd(doi, as_json, citation, bibtex, save_path, save_format):
     """Search for a work by DOI."""
     from .. import get
 
@@ -179,6 +260,17 @@ def search_by_doi_cmd(doi, as_json, citation, bibtex):
     if work is None:
         click.secho(f"Not found: {doi}", fg="red", err=True)
         sys.exit(1)
+
+    # Save to file if requested
+    if save_path:
+        from .._core.export import save as _save
+
+        try:
+            saved = _save(work, save_path, format=save_format)
+            click.secho(f"Saved to {saved}", fg="green", err=True)
+        except Exception as e:
+            click.secho(f"Error saving: {e}", fg="red", err=True)
+            sys.exit(1)
 
     if citation:
         click.echo(work.citation("apa"))
@@ -242,6 +334,16 @@ def status_cmd(as_json):
     if "fts_indexed" in status:
         click.echo(f"FTS Indexed: {status['fts_indexed']:,}")
 
+    if status.get("has_sources"):
+        click.echo(
+            f"Sources/Journals: {status.get('sources_count', 0):,} (impact factors available)"
+        )
+    else:
+        click.secho(
+            "Sources: Not indexed (run scripts/database/04_build_sources_table.py for -if support)",
+            fg="yellow",
+        )
+
 
 # Register MCP subcommand group
 from .mcp import mcp
@@ -263,7 +365,12 @@ cli.add_command(cache_group)
     envvar="OPENALEX_LOCAL_PORT",
     help="Port to listen on (default: 31292)",
 )
-def relay(host: str, port: int):
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Kill existing process using the port if any",
+)
+def relay(host: str, port: int, force: bool):
     """Run HTTP relay server for remote database access.
 
     \b
@@ -274,6 +381,7 @@ def relay(host: str, port: int):
     Example:
       openalex-local relay                  # Run on 0.0.0.0:31292
       openalex-local relay --port 8080      # Custom port
+      openalex-local relay --force          # Kill existing process if port in use
 
     \b
     Then connect with http mode:
@@ -292,10 +400,97 @@ def relay(host: str, port: int):
 
     host = host or DEFAULT_HOST
     port = port or DEFAULT_PORT
+
+    # Handle force flag
+    if force:
+        from .utils import kill_process_on_port
+
+        kill_process_on_port(port)
+
     click.echo(f"Starting OpenAlex Local relay server on {host}:{port}")
     click.echo(f"Search endpoint: http://{host}:{port}/works?q=<query>")
     click.echo(f"Docs: http://{host}:{port}/docs")
     run_server(host=host, port=port)
+
+
+@cli.command("export-if")
+@click.option("-o", "--output", default="scitex_if.csv", help="Output file (csv or json)")
+@click.option("--format", "fmt", type=click.Choice(["csv", "json"]), default=None, help="Output format (auto from extension)")
+@click.option("--limit", type=int, default=0, help="Limit rows (0=all)")
+def export_if(output, fmt, limit):
+    """Export SciTeX Impact Factors (OpenAlex) to CSV or JSON.
+
+    Exports precomputed journal impact factors from the database.
+    Note: These are SciTeX IF values calculated from OpenAlex data,
+    not JCR Impact Factors.
+    """
+    from .._core.db import get_db
+
+    db = get_db()
+    if not db.db_path:
+        click.secho("Error: Database not configured", fg="red")
+        sys.exit(1)
+
+    cursor = db.conn.cursor()
+
+    # Check if table exists
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='journal_impact_factors'")
+    if not cursor.fetchone():
+        click.secho("Error: journal_impact_factors table not found", fg="red")
+        click.echo("Run: make build-if-table")
+        sys.exit(1)
+
+    # Get data
+    query = "SELECT issn, journal_name, year, impact_factor FROM journal_impact_factors WHERE impact_factor IS NOT NULL ORDER BY impact_factor DESC"
+    if limit > 0:
+        query += f" LIMIT {limit}"
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+
+    # Determine format
+    if fmt is None:
+        fmt = "json" if output.endswith(".json") else "csv"
+
+    if fmt == "json":
+        data = [{"issn": r[0], "journal": r[1], "year": r[2], "scitex_if": r[3]} for r in rows]
+        with open(output, "w") as f:
+            json.dump(data, f, indent=2)
+    else:
+        import csv
+        with open(output, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["issn", "journal", "year", "scitex_if"])
+            writer.writerows(rows)
+
+    click.secho(f"Exported {len(rows):,} SciTeX IF values to {output}", fg="green")
+
+
+@cli.command("list-python-apis")
+@click.option(
+    "-v", "--verbose", count=True, help="Verbosity: -v sig, -vv +doc, -vvv full"
+)
+@click.option("-d", "--max-depth", type=int, default=5, help="Max recursion depth")
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+def list_python_apis(verbose, max_depth, as_json):
+    """List Python APIs (alias for: scitex introspect api openalex_local)."""
+    try:
+        from scitex.cli.introspect import api
+
+        ctx = click.Context(api)
+        ctx.invoke(
+            api,
+            dotted_path="openalex_local",
+            verbose=verbose,
+            max_depth=max_depth,
+            as_json=as_json,
+        )
+    except ImportError:
+        # Fallback if scitex not installed
+        click.echo("Install scitex for full API introspection:")
+        click.echo("  pip install scitex")
+        click.echo()
+        click.echo("Or use: scitex introspect api openalex_local")
 
 
 def main():

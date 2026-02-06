@@ -1,6 +1,6 @@
 #!/bin/bash
 # -*- coding: utf-8 -*-
-# Timestamp: "2026-02-03 (ywatanabe)"
+# Timestamp: "2026-02-06 (ywatanabe)"
 # File: /home/ywatanabe/proj/openalex-local/examples/00_run_all.sh
 
 # Run all openalex-local examples in sequence.
@@ -19,11 +19,18 @@ show_help() {
     echo "  -h, --help    Show this help message"
     echo ""
     echo "Examples run:"
-    echo "  01_quickstart.py           Basic quickstart demo"
-    echo "  02_cli_demo.sh             CLI demonstration"
+    echo "  01_quickstart.py       Basic quickstart demo"
+    echo "  02_basic_search.py     Search functionality"
+    echo "  03_get_by_doi.py       DOI lookup"
+    echo "  04_citations.py        Citation handling"
+    echo "  05_cache_workflow.py   Cache workflow"
+    echo "  06_async_search.py     Async search"
+    echo "  07_enrich_workflow.py  Enrichment workflow"
+    echo "  08_cli_demo.sh         CLI demonstration"
+    echo "  09_plot_if_vs_jcr.py   IF validation plot"
     echo ""
     echo "Output:"
-    echo "  Each script creates its own log in script_out/"
+    echo "  Each script creates its own log in *_out/"
     echo "  This runner logs to: $LOG_FILE"
 }
 
@@ -49,40 +56,30 @@ log "OpenAlex Local Examples Runner"
 log "========================================"
 log ""
 
-# Run all numbered scripts (Python and Shell)
-SCRIPTS=(01_*.py 01_*.sh 02_*.py 02_*.sh)
+# Find all numbered scripts (01-09)
+SCRIPTS=$(ls -1 0[1-9]_*.py 0[1-9]_*.sh 2>/dev/null | sort)
+TOTAL=$(echo "$SCRIPTS" | wc -l)
 COUNT=0
-TOTAL=0
 
-for pattern in "${SCRIPTS[@]}"; do
-    for script in $pattern; do
-        if [[ -f "$script" ]]; then
-            TOTAL=$((TOTAL + 1))
-        fi
-    done
-done
-
-for pattern in "${SCRIPTS[@]}"; do
-    for script in $pattern; do
-        if [[ -f "$script" ]]; then
-            COUNT=$((COUNT + 1))
-            log "[$COUNT/$TOTAL] Running $script..."
-            if [[ "$script" == *.py ]]; then
-                if python "$script" 2>&1 | tee -a "$LOG_FILE"; then
-                    log "Done: $script"
-                else
-                    log "WARNING: $script had errors"
-                fi
-            elif [[ "$script" == *.sh ]]; then
-                if bash "$script" 2>&1 | tee -a "$LOG_FILE"; then
-                    log "Done: $script"
-                else
-                    log "WARNING: $script had errors"
-                fi
+for script in $SCRIPTS; do
+    if [[ -f "$script" ]]; then
+        COUNT=$((COUNT + 1))
+        log "[$COUNT/$TOTAL] Running $script..."
+        if [[ "$script" == *.py ]]; then
+            if python "$script" 2>&1 | tee -a "$LOG_FILE"; then
+                log "Done: $script"
+            else
+                log "WARNING: $script had errors"
             fi
-            log ""
+        elif [[ "$script" == *.sh ]]; then
+            if bash "$script" 2>&1 | tee -a "$LOG_FILE"; then
+                log "Done: $script"
+            else
+                log "WARNING: $script had errors"
+            fi
         fi
-    done
+        log ""
+    fi
 done
 
 log "========================================"
@@ -90,7 +87,7 @@ log "All examples completed!"
 log "========================================"
 log ""
 log "Check individual outputs in:"
-log "  - script_out/FINISHED_*/  (per-script logs)"
+log "  - *_out/ directories"
 log "  - $LOG_FILE (this runner log)"
 log ""
 log "Finished: $(date)"

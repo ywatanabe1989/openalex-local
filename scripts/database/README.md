@@ -2,97 +2,132 @@
 
 Scripts for downloading, building, and maintaining the OpenAlex local database.
 
-## Numbering Convention
-
-| Prefix | Category |
-|--------|----------|
-| `00_` | Download orchestration |
-| `01_` | Additional download scripts |
-| `02_` | Database build (JSON → SQLite) |
-| `03_` | FTS index build |
-| `99_` | Utilities (info, maintenance) |
-
-## Build Order
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  00_download_safe.sh + 01_download_other_entities.sh        │
-│  (download OpenAlex snapshot - ~760GB, 1-2 days)            │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  02_build_database.py                                       │
-│  (parse JSON Lines → SQLite - 12-48 hours)                  │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  03_build_fts_index.py                                      │
-│  (build FTS5 full-text search - 1-4 hours)                  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Scripts
-
-### Download (00_, 01_)
-
-| Script | Description | Duration |
-|--------|-------------|----------|
-| `00_download_safe.sh` | Download works entity (698GB) | 12-24h |
-| `00_download_all_entities.sh` | Download all entities | 1-2 days |
-| `01_download_other_entities.sh` | Download non-works entities (60GB) | 2-4h |
-| `01_download_snapshot.py` | Python download helper | - |
-
-### Build (02_, 03_)
-
-| Script | Description | Duration |
-|--------|-------------|----------|
-| `02_build_database.py` | Parse JSON Lines → SQLite database | 12-48h |
-| `03_build_fts_index.py` | Build FTS5 full-text search index | 1-4h |
-
-## Quick Commands
+## Quick Start
 
 ```bash
-# Check status
+# Always start here - shows current state and what to do next
 make status
+```
 
-# Download (if not done)
-make download
+## Numbering Convention
 
-# Build database (after download complete)
-make build-db
+| Prefix | Category | Description |
+|--------|----------|-------------|
+| `00_` | Download | Main snapshot download (works) |
+| `01_` | Download | Other entities + helpers |
+| `02_` | Build | JSON → SQLite database |
+| `03_` | Build | FTS5 full-text search index |
+| `04_` | Build | Sources/journals table (SciTeX IF proxy) |
+| `05_` | Build | Citations table (accurate SciTeX IF) |
+| `06_` | Build | SciTeX IF calculation indexes |
 
-# Build FTS index (after database built)
-make build-fts
+## Build Pipeline
 
-# Or build both sequentially
-make build
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  PHASE 1: DOWNLOAD (~760GB, 1-2 days)                               │
+│  make download                                                       │
+│    ├── 00_download_safe.sh (works: 698GB)                           │
+│    └── 01_download_other_entities.sh (authors+9: 60GB)              │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  PHASE 2: CORE DATABASE (12-48 hours)                               │
+│  make build                                                          │
+│    ├── 02_build_database.py (JSON → SQLite)                         │
+│    └── 03_build_fts_index.py (full-text search)                     │
+└─────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  PHASE 3: SciTeX IF (Optional)                                  │
+│  make build-sources      # 04: Journal metadata (~30 sec)           │
+│  make build-citations    # 05: Citation graph (~50-70h total)       │
+│  make build-if-indexes   # 06: Works table indexes (~2-4 hours)     │
+│  make build-ref-count    # 07: Add ref_count column (~8 hours)      │
+│  [08_experiment_thresholds.py - determines >20 refs threshold]      │
+│  make build-if-table     # 09: Precompute JCR-style IFs (~1 hour)   │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-# Monitor progress
-make db-info
-make db-stats
+## Scripts Reference
 
-# Check build sessions
-screen -ls
+### Download Scripts (00_, 01_)
+
+| Script | Description | Duration | Command |
+|--------|-------------|----------|---------|
+| `00_download_safe.sh` | Download works entity (698GB) | 12-24h | `make download-works` |
+| `00_download_all_entities.sh` | Download all entities | 1-2 days | - |
+| `01_download_other_entities.sh` | Download non-works (60GB) | 2-4h | `make download-others` |
+| `01_download_snapshot.py` | Python download helper | - | - |
+
+### Build Scripts (02_, 03_)
+
+| Script | Description | Duration | Command |
+|--------|-------------|----------|---------|
+| `02_build_database.py` | Parse JSON → SQLite | 12-48h | `make build-db` |
+| `03_build_fts_index.py` | Build FTS5 search index | 1-4h | `make build-fts` |
+
+### SciTeX IF Scripts (04_, 05_, 06_)
+
+| Script | Description | Duration | Command |
+|--------|-------------|----------|---------|
+| `04_build_sources_table.py` | Journal metadata (SciTeX IF proxy) | ~30 sec | `make build-sources` |
+| `05_build_citations_table.py` | Citation relationships (2.9B rows) | ~3-4h | `make build-citations` |
+| `06_build_if_indexes.py` | All SciTeX IF-related indexes | ~8-10h | `make build-if-indexes` |
+| `07_add_ref_count_column.py` | Add ref_count for citable filter | ~1-2h | `make build-ref-count` |
+| `08_experiment_thresholds.py` | Test citable items threshold | ~5 min | manual |
+| `09_build_if_table.py` | Precompute SciTeX IFs | ~1h | `make build-if-table` |
+
+## Make Targets Summary
+
+```bash
+# Status & Help
+make status              # Show current state (START HERE)
+make help                # List all commands
+make check               # Verify prerequisites
+
+# Download
+make download            # Download all (parallel)
+make download-works      # Download works only (698GB)
+make download-others     # Download other entities (60GB)
+make download-stop       # Stop downloads (resumable)
+
+# Core Build
+make build               # Build database + FTS
+make build-db            # Build SQLite from snapshot
+make build-fts           # Build full-text search
+
+# SciTeX IF Build (Optional)
+make build-sources       # Build journal metadata table
+make build-citations     # Build citation graph (slow!)
+make build-if-indexes    # Build IF calculation indexes
+
+# Utilities
+make build-stop          # Stop all builds (resumable)
+make db-info             # Show database info
+make db-stats            # Detailed statistics
 ```
 
 ## Database Schema
 
+### Core Tables
+
 ```sql
--- Works table: core metadata
+-- Works table: 284M+ scholarly works
 CREATE TABLE works (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    openalex_id TEXT UNIQUE NOT NULL,  -- e.g., W2741809807
-    doi TEXT,                           -- e.g., 10.1234/example
+    openalex_id TEXT UNIQUE NOT NULL,  -- W2741809807
+    doi TEXT,
     title TEXT,
-    abstract TEXT,                      -- reconstructed from inverted index
+    abstract TEXT,
     year INTEGER,
     publication_date TEXT,
-    type TEXT,                          -- article, book-chapter, etc.
-    language TEXT,                      -- ISO 639-1 code
-    source TEXT,                        -- journal/venue name
-    source_id TEXT,                     -- OpenAlex source ID
+    type TEXT,
+    language TEXT,
+    source TEXT,           -- Journal name
+    source_id TEXT,        -- OpenAlex source ID
     issn TEXT,
     volume TEXT,
     issue TEXT,
@@ -100,130 +135,172 @@ CREATE TABLE works (
     last_page TEXT,
     publisher TEXT,
     cited_by_count INTEGER DEFAULT 0,
-    is_oa INTEGER DEFAULT 0,            -- 1=open access
-    oa_status TEXT,                     -- gold, green, bronze, etc.
+    is_oa INTEGER DEFAULT 0,
+    oa_status TEXT,
     oa_url TEXT,
-    authors_json TEXT,                  -- JSON array of author names
-    concepts_json TEXT,                 -- JSON array of concepts
-    topics_json TEXT,                   -- JSON array of topics
-    referenced_works_json TEXT,         -- JSON array of referenced work IDs
-    raw_json TEXT,                      -- full original JSON (optional)
+    authors_json TEXT,
+    concepts_json TEXT,
+    topics_json TEXT,
+    referenced_works_json TEXT,
+    raw_json TEXT,
     created_at TIMESTAMP
 );
 
--- FTS5 full-text search on title + abstract
+-- FTS5 full-text search
 CREATE VIRTUAL TABLE works_fts USING fts5(
-    openalex_id,
-    title,
-    abstract,
-    content='works',
-    content_rowid='id',
+    openalex_id, title, abstract,
+    content='works', content_rowid='id',
     tokenize='porter unicode61'
 );
-
--- Build progress tracking (for resumable builds)
-CREATE TABLE _build_progress (
-    file_path TEXT PRIMARY KEY,
-    records_processed INTEGER,
-    completed_at TIMESTAMP
-);
-
--- Metadata
-CREATE TABLE _metadata (
-    key TEXT PRIMARY KEY,
-    value TEXT
-);
 ```
 
-## Indices
+### SciTeX IF Tables (Optional)
 
 ```sql
-CREATE INDEX idx_works_doi ON works(doi);
-CREATE INDEX idx_works_year ON works(year);
-CREATE INDEX idx_works_source ON works(source);
-CREATE INDEX idx_works_type ON works(type);
-CREATE INDEX idx_works_language ON works(language);
-CREATE INDEX idx_works_cited_by_count ON works(cited_by_count);
-CREATE INDEX idx_works_is_oa ON works(is_oa);
+-- Sources: 255K journals with metrics
+CREATE TABLE sources (
+    id INTEGER PRIMARY KEY,
+    openalex_id TEXT UNIQUE,
+    issn_l TEXT,
+    issns TEXT,              -- JSON array
+    display_name TEXT,
+    type TEXT,
+    works_count INTEGER,
+    cited_by_count INTEGER,
+    two_year_mean_citedness REAL,  -- SciTeX IF proxy
+    h_index INTEGER,
+    i10_index INTEGER,
+    is_oa INTEGER,
+    is_in_doaj INTEGER
+);
+
+-- ISSN lookup for fast journal identification
+CREATE TABLE issn_lookup (
+    issn TEXT PRIMARY KEY,
+    source_id INTEGER REFERENCES sources(id)
+);
+
+-- Citations: 2.9B citation relationships
+CREATE TABLE citations (
+    citing_id TEXT NOT NULL,   -- Work that cites
+    cited_id TEXT NOT NULL,    -- Work being cited
+    citing_year INTEGER        -- Year of citation
+);
 ```
 
-## Prerequisites
+### Indexes for SciTeX IF Calculation
 
-1. **Downloaded Snapshot** (~760GB)
-   - Run: `make download`
-   - Wait for completion: `make status`
+```sql
+-- Works table (for finding articles by journal+year)
+CREATE INDEX idx_works_issn ON works(issn);
+CREATE INDEX idx_works_issn_year ON works(issn, year);  -- KEY for IF
+CREATE INDEX idx_works_source_id ON works(source_id);
+CREATE INDEX idx_works_source_id_year ON works(source_id, year);
 
-2. **Disk Space**
-   - Snapshot: ~760GB
-   - Database: ~1-2TB
-   - Total: ~3TB recommended
+-- Citations table (for counting citations)
+CREATE INDEX idx_citations_cited_year ON citations(cited_id, citing_year);  -- KEY for IF
+CREATE INDEX idx_citations_citing ON citations(citing_id);
+CREATE INDEX idx_citations_year ON citations(citing_year);
+```
 
-3. **Python 3.10+**
+## SciTeX Impact Factor (OpenAlex) Calculation
 
-## Estimated Resources
+Note: We use "SciTeX Impact Factor" or "SciTeX IF" to distinguish from
+the trademarked "Journal Impact Factor" (JCR/Clarivate). Our calculation
+uses the same formula but with OpenAlex data.
 
-| Phase | Size | Duration | Notes |
+### Formula
+```
+SciTeX IF(2023) = Citations in 2023 to articles from 2021-2022
+                  ─────────────────────────────────────────────
+                  Citable articles published in 2021-2022
+```
+
+### Data Flow
+```
+1. Find articles: SELECT openalex_id FROM works
+                  WHERE issn = ? AND year BETWEEN 2021 AND 2022
+
+2. Count citations: SELECT COUNT(*) FROM citations
+                    WHERE cited_id IN (...) AND citing_year = 2023
+
+3. Calculate: IF = citations / articles
+```
+
+### Two SciTeX IF Sources
+
+| Source | Table | Speed | Accuracy |
+|--------|-------|-------|----------|
+| OpenAlex proxy | `sources.two_year_mean_citedness` | Fast | Good proxy |
+| Calculated | `citations` table | Slower | JCR-style |
+
+## Resource Requirements
+
+| Phase | Disk | Duration | Notes |
 |-------|------|----------|-------|
 | Download | 760GB | 1-2 days | At 5-10 MB/s |
-| Build DB | ~1.5TB | 12-48h | Depends on I/O |
-| Build FTS | +20-50GB | 1-4h | Added to DB |
-| **Total** | **~2TB** | **2-4 days** | |
+| Core Build | +1TB | 12-48h | DB + FTS |
+| SciTeX IF Build | +300GB | 50-70h | Citations + indexes |
+| **Total** | **~2TB** | **3-5 days** | |
 
-## Output
+## Monitoring Progress
 
-| Table | Expected Rows | Description |
-|-------|---------------|-------------|
-| works | ~284M | All OpenAlex works with metadata |
-| works_fts | ~284M | Full-text search index |
-| _build_progress | ~10K | Files processed (for resume) |
-| _metadata | ~5 | Build timestamps, counts |
+```bash
+# Check overall status
+make status
+
+# Watch specific builds
+tail -f logs/build_db.log
+tail -f logs/build_fts.log
+tail -f logs/build_citations.log
+tail -f logs/build_if_indexes.log
+
+# Check screen sessions
+screen -ls
+
+# Attach to session
+screen -r openalex-build-db
+
+# Database growth
+watch -n 60 'du -h data/openalex.db'
+```
 
 ## Resumability
 
-Both build scripts support resuming:
+All scripts support resuming after interruption:
 
-- `02_build_database.py`: Tracks processed files in `_build_progress` table
-- `03_build_fts_index.py`: Checks if FTS is complete before rebuilding
-
-If a build is interrupted, simply run the same command again to continue.
+| Script | Resume Mechanism |
+|--------|------------------|
+| `02_build_database.py` | Tracks files in `_build_progress` table |
+| `03_build_fts_index.py` | Checks if FTS complete |
+| `05_build_citations_table.py` | Tracks rowid in `_citations_build_progress` |
+| `06_build_if_indexes.py` | Uses `CREATE INDEX IF NOT EXISTS` |
 
 ## Troubleshooting
 
 ### Build seems stuck
 ```bash
-# Check screen session
-screen -r openalex-build-db
-
-# Check log
-tail -f logs/build_db.log
-
-# Check database growth
-watch -n 60 'du -h data/openalex.db'
+screen -r openalex-build-db     # Attach to session
+tail -f logs/build_db.log       # Check log
+watch -n 60 'du -h data/openalex.db'  # Watch growth
 ```
 
 ### Out of disk space
 ```bash
-# Check space
-df -h
-
-# The build needs ~2TB total
-# Consider using external storage
+df -h                           # Check space
+# Need ~2TB total for full build
 ```
 
-### Slow performance
+### Database locked during index creation
 ```bash
-# The scripts use optimized SQLite settings:
-# - WAL mode for concurrent reads
-# - Large cache (2GB)
-# - Memory temp store
-
-# If still slow, check I/O:
-iostat -x 1
+# Wait for index to complete, or use a new connection
+sqlite3 data/openalex.db ".indices"  # Check existing indexes
 ```
 
 ## Related Files
 
-- `Makefile` - Build targets
+- `Makefile` - Build orchestration
+- `scripts/utils/status.sh` - Status reporter
 - `src/openalex_local/_core/db.py` - Database connection
-- `src/openalex_local/_core/fts.py` - FTS search functions
-- `src/openalex_local/_core/models.py` - Work data model
+- `src/openalex_local/_core/fts.py` - FTS search
+- `src/openalex_local/_core/models.py` - Work model

@@ -50,6 +50,10 @@ class Work:
     referenced_works: List[str] = field(default_factory=list)
     is_oa: bool = False
     oa_url: Optional[str] = None
+    # Source/journal metrics (from sources table)
+    scitex_if: Optional[float] = None  # SciTeX Impact Factor (OpenAlex)
+    source_h_index: Optional[int] = None
+    source_cited_by_count: Optional[int] = None
 
     @classmethod
     def from_openalex(cls, data: dict) -> "Work":
@@ -177,6 +181,9 @@ class Work:
             referenced_works=data.get("referenced_works", []),
             is_oa=bool(data.get("is_oa", False)),
             oa_url=data.get("oa_url"),
+            scitex_if=data.get("scitex_if"),
+            source_h_index=data.get("source_h_index"),
+            source_cited_by_count=data.get("source_cited_by_count"),
         )
 
     def to_dict(self) -> dict:
@@ -201,6 +208,11 @@ class Work:
             "referenced_works": self.referenced_works,
             "is_oa": self.is_oa,
             "oa_url": self.oa_url,
+            "scitex_if": round(self.scitex_if, 1)
+            if self.scitex_if is not None
+            else None,
+            "source_h_index": self.source_h_index,
+            "source_cited_by_count": self.source_cited_by_count,
         }
 
     def citation(self, style: str = "apa") -> str:
@@ -239,9 +251,11 @@ class Work:
             else:
                 formatted = [self._format_author_apa(a) for a in self.authors[:19]]
                 if len(self.authors) > 20:
-                    formatted = formatted[:19] + ["..."] + [
-                        self._format_author_apa(self.authors[-1])
-                    ]
+                    formatted = (
+                        formatted[:19]
+                        + ["..."]
+                        + [self._format_author_apa(self.authors[-1])]
+                    )
                 parts.append(", ".join(formatted[:-1]) + ", & " + formatted[-1])
 
         # Year
@@ -263,6 +277,10 @@ class Work:
                 source_part += f", {self.pages}"
             source_part += "."
             parts.append(source_part)
+
+        # SciTeX Impact Factor (OpenAlex)
+        if self.scitex_if is not None:
+            parts.append(f"[SciTeX IF: {self.scitex_if:.1f}]")
 
         # DOI
         if self.doi:
@@ -333,9 +351,44 @@ class Work:
         if self.oa_url:
             lines.append(f"  url = {{{self.oa_url}}},")
 
+        if self.scitex_if is not None:
+            lines.append(f"  note = {{SciTeX IF: {self.scitex_if:.1f}}},")
+
         lines.append("}")
 
         return "\n".join(lines)
+
+    def to_text(self, include_abstract: bool = False) -> str:
+        """Format as human-readable text.
+
+        Args:
+            include_abstract: Include abstract in output
+
+        Returns:
+            Formatted text string
+        """
+        from .export import work_to_text
+
+        return work_to_text(self, include_abstract=include_abstract)
+
+    def save(self, path: str, format: str = "json") -> str:
+        """Save work to file.
+
+        Args:
+            path: Output file path
+            format: Output format ("text", "json", "bibtex")
+
+        Returns:
+            Path to saved file
+
+        Examples:
+            >>> work = get("W2741809807")
+            >>> work.save("paper.json")
+            >>> work.save("paper.bib", format="bibtex")
+        """
+        from .export import save
+
+        return save(self, path, format=format)
 
 
 @dataclass
@@ -363,3 +416,26 @@ class SearchResult:
 
     def __getitem__(self, idx):
         return self.works[idx]
+
+    def save(
+        self, path: str, format: str = "json", include_abstract: bool = True
+    ) -> str:
+        """Save search results to file.
+
+        Args:
+            path: Output file path
+            format: Output format ("text", "json", "bibtex")
+            include_abstract: Include abstracts in text format
+
+        Returns:
+            Path to saved file
+
+        Examples:
+            >>> results = search("machine learning", limit=10)
+            >>> results.save("results.json")
+            >>> results.save("results.bib", format="bibtex")
+            >>> results.save("results.txt", format="text")
+        """
+        from .export import save
+
+        return save(self, path, format=format, include_abstract=include_abstract)

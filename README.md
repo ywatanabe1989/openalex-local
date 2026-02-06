@@ -2,6 +2,12 @@
 
 Local OpenAlex database with 284M+ scholarly works, abstracts, and semantic search.
 
+<p align="center">
+  <img src="docs/scitex_if_validation.png" alt="SciTeX IF vs JCR Validation" width="600"/>
+  <br>
+  <em>SciTeX Impact Factor (OpenAlex) validated against JCR 2024 (r = 0.96, 17,042 journals)</em>
+</p>
+
 [![PyPI version](https://badge.fury.io/py/openalex-local.svg)](https://badge.fury.io/py/openalex-local)
 [![Documentation](https://readthedocs.org/projects/openalex-local/badge/?version=latest)](https://openalex-local.readthedocs.io/en/latest/)
 [![Tests](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml)
@@ -193,6 +199,47 @@ Available tools:
 - `search_by_id` - Get paper by OpenAlex ID or DOI
 - `enrich_ids` - Batch lookup with metadata
 - `status` - Database statistics
+
+</details>
+
+<details>
+<summary><strong>SciTeX Impact Factor (OpenAlex)</strong></summary>
+
+We provide precomputed **SciTeX Impact Factors** calculated from OpenAlex citation data.
+These follow the JCR formula but use OpenAlex as the data source.
+
+**Validation against JCR 2024** (17,042 matched journals):
+
+| Metric | Value |
+|--------|-------|
+| Pearson r | 0.96 |
+| Spearman ρ | 0.93 |
+| p-value | < 1e-100 |
+
+**Export SciTeX IF:**
+```bash
+# Export all SciTeX IF values
+openalex-local export-if -o scitex_if.csv
+openalex-local export-if -o scitex_if.json
+
+# Top 1000
+openalex-local export-if -o top1000.csv --limit 1000
+```
+
+**Use in search results:**
+```bash
+openalex-local search "machine learning" --with-if
+```
+
+**Formula:**
+```
+SciTeX IF(Year) = Citations in Year to articles from (Year-1, Year-2)
+                  ─────────────────────────────────────────────────────
+                  Citable articles published in (Year-1, Year-2)
+```
+
+Note: "SciTeX IF" is our calculation using OpenAlex data.
+It is not the trademarked "Journal Impact Factor" from Clarivate/JCR.
 
 </details>
 

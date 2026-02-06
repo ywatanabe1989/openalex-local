@@ -109,7 +109,7 @@ class RemoteClient:
 
         Args:
             query: Full-text search query
-            limit: Maximum results (default: 20, max: 100)
+            limit: Maximum results (default: 20)
             offset: Skip first N results for pagination
 
         Returns:
@@ -117,7 +117,7 @@ class RemoteClient:
         """
         params = {
             "q": query,
-            "limit": min(limit, 100),
+            "limit": limit,
             "offset": offset,
         }
 

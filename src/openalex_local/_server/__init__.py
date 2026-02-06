@@ -80,14 +80,18 @@ def info():
 
     db = get_db()
 
-    row = db.fetchone("SELECT COUNT(*) as count FROM works")
-    work_count = row["count"] if row else 0
-
+    # Use _metadata table for pre-computed counts (COUNT(*) on 459M rows is too slow)
+    work_count = 0
+    fts_count = 0
     try:
-        row = db.fetchone("SELECT COUNT(*) as count FROM works_fts")
-        fts_count = row["count"] if row else 0
+        row = db.fetchone("SELECT value FROM _metadata WHERE key = 'total_works'")
+        if row:
+            work_count = int(row["value"])
+        row = db.fetchone("SELECT value FROM _metadata WHERE key = 'fts_total_indexed'")
+        if row:
+            fts_count = int(row["value"])
     except Exception:
-        fts_count = 0
+        pass
 
     return {
         "name": "OpenAlex Local API",
@@ -105,12 +109,24 @@ DEFAULT_PORT = int(os.environ.get("OPENALEX_LOCAL_PORT", "31292"))
 DEFAULT_HOST = os.environ.get("OPENALEX_LOCAL_HOST", "0.0.0.0")
 
 
-def run_server(host: str = None, port: int = None):
-    """Run the FastAPI server."""
+def run_server(host: str = None, port: int = None, force: bool = False):
+    """Run the FastAPI server.
+
+    Args:
+        host: Host to bind to (default: 0.0.0.0)
+        port: Port to listen on (default: 31292)
+        force: If True, kill any existing process using the port
+    """
     import uvicorn
 
     host = host or DEFAULT_HOST
     port = port or DEFAULT_PORT
+
+    if force:
+        from .._cli.utils import kill_process_on_port
+
+        kill_process_on_port(port)
+
     uvicorn.run(app, host=host, port=port)
 
 

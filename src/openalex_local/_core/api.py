@@ -269,12 +269,25 @@ def info() -> dict:
         except Exception:
             fts_count = 0
 
+    # Check for sources table
+    sources_count = 0
+    has_sources = False
+    try:
+        if db.has_sources_table():
+            has_sources = True
+            row = db.fetchone("SELECT COUNT(*) as count FROM sources")
+            sources_count = row["count"] if row else 0
+    except Exception:
+        pass
+
     return {
         "status": "ok",
         "mode": "db",
         "db_path": str(Config.get_db_path()),
         "work_count": work_count,
         "fts_indexed": fts_count,
+        "has_sources": has_sources,
+        "sources_count": sources_count,
     }
 
 
