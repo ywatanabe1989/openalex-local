@@ -2,6 +2,12 @@
 
 Local OpenAlex database with 284M+ scholarly works, abstracts, and semantic search.
 
+<p align="center">
+  <img src="docs/scitex_if_validation.png" alt="SciTeX IF vs JCR Validation" width="600"/>
+  <br>
+  <em>SciTeX Impact Factor (OpenAlex) validated against JCR 2024 (r = 0.96, 17,042 journals)</em>
+</p>
+
 [![PyPI version](https://badge.fury.io/py/openalex-local.svg)](https://badge.fury.io/py/openalex-local)
 [![Documentation](https://readthedocs.org/projects/openalex-local/badge/?version=latest)](https://openalex-local.readthedocs.io/en/latest/)
 [![Tests](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml)
@@ -209,8 +215,6 @@ These follow the JCR formula but use OpenAlex as the data source.
 | Pearson r | 0.96 |
 | Spearman ρ | 0.93 |
 | p-value | < 1e-100 |
-
-<img src="docs/scitex_if_validation.png" alt="SciTeX IF vs JCR Validation" width="500"/>
 
 **Export SciTeX IF:**
 ```bash
