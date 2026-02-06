@@ -51,7 +51,7 @@ class Work:
     is_oa: bool = False
     oa_url: Optional[str] = None
     # Source/journal metrics (from sources table)
-    impact_factor: Optional[float] = None  # 2yr_mean_citedness
+    scitex_if: Optional[float] = None  # SciTeX Impact Factor (OpenAlex)
     source_h_index: Optional[int] = None
     source_cited_by_count: Optional[int] = None
 
@@ -181,7 +181,7 @@ class Work:
             referenced_works=data.get("referenced_works", []),
             is_oa=bool(data.get("is_oa", False)),
             oa_url=data.get("oa_url"),
-            impact_factor=data.get("impact_factor"),
+            scitex_if=data.get("scitex_if"),
             source_h_index=data.get("source_h_index"),
             source_cited_by_count=data.get("source_cited_by_count"),
         )
@@ -208,8 +208,8 @@ class Work:
             "referenced_works": self.referenced_works,
             "is_oa": self.is_oa,
             "oa_url": self.oa_url,
-            "impact_factor": round(self.impact_factor, 1)
-            if self.impact_factor is not None
+            "scitex_if": round(self.scitex_if, 1)
+            if self.scitex_if is not None
             else None,
             "source_h_index": self.source_h_index,
             "source_cited_by_count": self.source_cited_by_count,
@@ -277,6 +277,10 @@ class Work:
                 source_part += f", {self.pages}"
             source_part += "."
             parts.append(source_part)
+
+        # SciTeX Impact Factor (OpenAlex)
+        if self.scitex_if is not None:
+            parts.append(f"[SciTeX IF: {self.scitex_if:.1f}]")
 
         # DOI
         if self.doi:
@@ -346,6 +350,9 @@ class Work:
 
         if self.oa_url:
             lines.append(f"  url = {{{self.oa_url}}},")
+
+        if self.scitex_if is not None:
+            lines.append(f"  note = {{SciTeX IF: {self.scitex_if:.1f}}},")
 
         lines.append("}")
 

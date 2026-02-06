@@ -8,7 +8,9 @@ Example:
     >>> work = get("10.1038/nature12373")  # or DOI
 """
 
-__version__ = "0.3.2"
+import importlib.metadata
+
+__version__ = importlib.metadata.version("openalex-local")
 
 from ._core import (
     SUPPORTED_FORMATS,

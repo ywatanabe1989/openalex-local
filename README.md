@@ -197,6 +197,49 @@ Available tools:
 </details>
 
 <details>
+<summary><strong>SciTeX Impact Factor (OpenAlex)</strong></summary>
+
+We provide precomputed **SciTeX Impact Factors** calculated from OpenAlex citation data.
+These follow the JCR formula but use OpenAlex as the data source.
+
+**Validation against JCR 2024** (17,042 matched journals):
+
+| Metric | Value |
+|--------|-------|
+| Pearson r | 0.96 |
+| Spearman ρ | 0.93 |
+| p-value | < 1e-100 |
+
+<img src="docs/scitex_if_validation.png" alt="SciTeX IF vs JCR Validation" width="500"/>
+
+**Export SciTeX IF:**
+```bash
+# Export all SciTeX IF values
+openalex-local export-if -o scitex_if.csv
+openalex-local export-if -o scitex_if.json
+
+# Top 1000
+openalex-local export-if -o top1000.csv --limit 1000
+```
+
+**Use in search results:**
+```bash
+openalex-local search "machine learning" --with-if
+```
+
+**Formula:**
+```
+SciTeX IF(Year) = Citations in Year to articles from (Year-1, Year-2)
+                  ─────────────────────────────────────────────────────
+                  Citable articles published in (Year-1, Year-2)
+```
+
+Note: "SciTeX IF" is our calculation using OpenAlex data.
+It is not the trademarked "Journal Impact Factor" from Clarivate/JCR.
+
+</details>
+
+<details>
 <summary><strong>Related Projects</strong></summary>
 
 **[crossref-local](https://github.com/ywatanabe1989/crossref-local)** - Sister project with CrossRef data:

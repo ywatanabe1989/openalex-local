@@ -124,36 +124,61 @@ class Database:
         """
         Get source/journal metrics by ISSN.
 
+        Uses SciTeX Impact Factor (OpenAlex) from precomputed table when available,
+        combined with source metrics in a single optimized query.
+
         Args:
             issn: Journal ISSN
 
         Returns:
-            Dictionary with impact_factor, h_index, cited_by_count or None
+            Dictionary with scitex_if, h_index, cited_by_count or None
         """
         if not issn:
             return None
 
-        # Try lookup via issn_lookup table first (fast)
+        # Single optimized query with LEFT JOIN to get both SciTeX IF and source metrics
         row = self.fetchone(
             """
-            SELECT s.two_year_mean_citedness as impact_factor,
-                   s.h_index as source_h_index,
-                   s.cited_by_count as source_cited_by_count,
-                   s.display_name as source_name
+            SELECT
+                jif.impact_factor as scitex_if,
+                jif.year as if_year,
+                s.h_index as source_h_index,
+                s.cited_by_count as source_cited_by_count,
+                COALESCE(s.display_name, jif.journal_name) as source_name
             FROM issn_lookup l
             JOIN sources s ON l.source_id = s.id
+            LEFT JOIN (
+                SELECT issn, impact_factor, journal_name, year
+                FROM journal_impact_factors
+                WHERE issn = ?
+                ORDER BY year DESC
+                LIMIT 1
+            ) jif ON jif.issn = l.issn
             WHERE l.issn = ?
+            """,
+            (issn, issn),
+        )
+        if row:
+            return dict(row)
+
+        # Fallback: check journal_impact_factors only (journal may not be in sources)
+        row = self.fetchone(
+            """
+            SELECT impact_factor as scitex_if, journal_name as source_name, year as if_year
+            FROM journal_impact_factors
+            WHERE issn = ?
+            ORDER BY year DESC
+            LIMIT 1
             """,
             (issn,),
         )
         if row:
             return dict(row)
 
-        # Fallback: search in sources.issns JSON field
+        # Final fallback: search in sources.issns JSON field
         row = self.fetchone(
             """
-            SELECT two_year_mean_citedness as impact_factor,
-                   h_index as source_h_index,
+            SELECT h_index as source_h_index,
                    cited_by_count as source_cited_by_count,
                    display_name as source_name
             FROM sources

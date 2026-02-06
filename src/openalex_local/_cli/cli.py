@@ -157,7 +157,7 @@ def search_cmd(
                         if_cache[work.issn] = metrics
                     if work.issn and if_cache.get(work.issn):
                         metrics = if_cache[work.issn]
-                        work.impact_factor = metrics.get("impact_factor")
+                        work.scitex_if = metrics.get("scitex_if")
                         work.source_h_index = metrics.get("source_h_index")
                         work.source_cited_by_count = metrics.get(
                             "source_cited_by_count"
@@ -207,8 +207,8 @@ def search_cmd(
         click.secho(f"{i}. {work.title} ({work.year})", fg="cyan", bold=True)
         click.echo(f"   DOI: {work.doi or 'N/A'}")
         journal_info = work.source or "N/A"
-        if with_if and work.impact_factor is not None:
-            journal_info += f" (IF: {work.impact_factor:.1f})"
+        if with_if and work.scitex_if is not None:
+            journal_info += f" (SciTeX IF: {work.scitex_if:.1f})"
         click.echo(f"   Journal: {journal_info}")
         if with_if:
             click.echo(
@@ -411,6 +411,59 @@ def relay(host: str, port: int, force: bool):
     click.echo(f"Search endpoint: http://{host}:{port}/works?q=<query>")
     click.echo(f"Docs: http://{host}:{port}/docs")
     run_server(host=host, port=port)
+
+
+@cli.command("export-if")
+@click.option("-o", "--output", default="scitex_if.csv", help="Output file (csv or json)")
+@click.option("--format", "fmt", type=click.Choice(["csv", "json"]), default=None, help="Output format (auto from extension)")
+@click.option("--limit", type=int, default=0, help="Limit rows (0=all)")
+def export_if(output, fmt, limit):
+    """Export SciTeX Impact Factors (OpenAlex) to CSV or JSON.
+
+    Exports precomputed journal impact factors from the database.
+    Note: These are SciTeX IF values calculated from OpenAlex data,
+    not JCR Impact Factors.
+    """
+    from .._core.db import get_db
+
+    db = get_db()
+    if not db.db_path:
+        click.secho("Error: Database not configured", fg="red")
+        sys.exit(1)
+
+    cursor = db.conn.cursor()
+
+    # Check if table exists
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='journal_impact_factors'")
+    if not cursor.fetchone():
+        click.secho("Error: journal_impact_factors table not found", fg="red")
+        click.echo("Run: make build-if-table")
+        sys.exit(1)
+
+    # Get data
+    query = "SELECT issn, journal_name, year, impact_factor FROM journal_impact_factors WHERE impact_factor IS NOT NULL ORDER BY impact_factor DESC"
+    if limit > 0:
+        query += f" LIMIT {limit}"
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+
+    # Determine format
+    if fmt is None:
+        fmt = "json" if output.endswith(".json") else "csv"
+
+    if fmt == "json":
+        data = [{"issn": r[0], "journal": r[1], "year": r[2], "scitex_if": r[3]} for r in rows]
+        with open(output, "w") as f:
+            json.dump(data, f, indent=2)
+    else:
+        import csv
+        with open(output, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["issn", "journal", "year", "scitex_if"])
+            writer.writerows(rows)
+
+    click.secho(f"Exported {len(rows):,} SciTeX IF values to {output}", fg="green")
 
 
 @cli.command("list-python-apis")

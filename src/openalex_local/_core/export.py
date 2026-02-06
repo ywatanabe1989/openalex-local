@@ -64,9 +64,11 @@ def work_to_text(work: "Work", include_abstract: bool = False) -> str:
 
     lines.append(f"OpenAlex ID: {work.openalex_id}")
 
-    # Citation count
+    # Citation count and impact factor
     if work.cited_by_count is not None:
         lines.append(f"Citations: {work.cited_by_count}")
+    if work.scitex_if is not None:
+        lines.append(f"SciTeX IF (OpenAlex): {work.scitex_if:.1f}")
 
     # Open access
     if work.is_oa:

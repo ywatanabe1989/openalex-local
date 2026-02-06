@@ -80,14 +80,18 @@ def info():
 
     db = get_db()
 
-    row = db.fetchone("SELECT COUNT(*) as count FROM works")
-    work_count = row["count"] if row else 0
-
+    # Use _metadata table for pre-computed counts (COUNT(*) on 459M rows is too slow)
+    work_count = 0
+    fts_count = 0
     try:
-        row = db.fetchone("SELECT COUNT(*) as count FROM works_fts")
-        fts_count = row["count"] if row else 0
+        row = db.fetchone("SELECT value FROM _metadata WHERE key = 'total_works'")
+        if row:
+            work_count = int(row["value"])
+        row = db.fetchone("SELECT value FROM _metadata WHERE key = 'fts_total_indexed'")
+        if row:
+            fts_count = int(row["value"])
     except Exception:
-        fts_count = 0
+        pass
 
     return {
         "name": "OpenAlex Local API",

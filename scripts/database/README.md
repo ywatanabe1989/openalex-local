@@ -17,9 +17,9 @@ make status
 | `01_` | Download | Other entities + helpers |
 | `02_` | Build | JSON → SQLite database |
 | `03_` | Build | FTS5 full-text search index |
-| `04_` | Build | Sources/journals table (IF proxy) |
-| `05_` | Build | Citations table (accurate IF) |
-| `06_` | Build | IF calculation indexes |
+| `04_` | Build | Sources/journals table (SciTeX IF proxy) |
+| `05_` | Build | Citations table (accurate SciTeX IF) |
+| `06_` | Build | SciTeX IF calculation indexes |
 
 ## Build Pipeline
 
@@ -41,11 +41,13 @@ make status
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│  PHASE 3: IMPACT FACTOR (Optional, 50-80 hours)                     │
-│  make build-sources      # Journal metadata (~30 sec)               │
-│  make build-citations    # Citation graph (~3-4 hours data +        │
-│                          #   ~8-10 hours indexes = 50-70h total)    │
-│  make build-if-indexes   # Works table indexes (~2-4 hours)         │
+│  PHASE 3: SciTeX IF (Optional)                                  │
+│  make build-sources      # 04: Journal metadata (~30 sec)           │
+│  make build-citations    # 05: Citation graph (~50-70h total)       │
+│  make build-if-indexes   # 06: Works table indexes (~2-4 hours)     │
+│  make build-ref-count    # 07: Add ref_count column (~8 hours)      │
+│  [08_experiment_thresholds.py - determines >20 refs threshold]      │
+│  make build-if-table     # 09: Precompute JCR-style IFs (~1 hour)   │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -67,13 +69,16 @@ make status
 | `02_build_database.py` | Parse JSON → SQLite | 12-48h | `make build-db` |
 | `03_build_fts_index.py` | Build FTS5 search index | 1-4h | `make build-fts` |
 
-### Impact Factor Scripts (04_, 05_, 06_)
+### SciTeX IF Scripts (04_, 05_, 06_)
 
 | Script | Description | Duration | Command |
 |--------|-------------|----------|---------|
-| `04_build_sources_table.py` | Journal metadata (IF proxy) | ~30 sec | `make build-sources` |
+| `04_build_sources_table.py` | Journal metadata (SciTeX IF proxy) | ~30 sec | `make build-sources` |
 | `05_build_citations_table.py` | Citation relationships (2.9B rows) | ~3-4h | `make build-citations` |
-| `06_build_if_indexes.py` | All IF-related indexes | ~8-10h | `make build-if-indexes` |
+| `06_build_if_indexes.py` | All SciTeX IF-related indexes | ~8-10h | `make build-if-indexes` |
+| `07_add_ref_count_column.py` | Add ref_count for citable filter | ~1-2h | `make build-ref-count` |
+| `08_experiment_thresholds.py` | Test citable items threshold | ~5 min | manual |
+| `09_build_if_table.py` | Precompute SciTeX IFs | ~1h | `make build-if-table` |
 
 ## Make Targets Summary
 
@@ -94,7 +99,7 @@ make build               # Build database + FTS
 make build-db            # Build SQLite from snapshot
 make build-fts           # Build full-text search
 
-# Impact Factor Build (Optional)
+# SciTeX IF Build (Optional)
 make build-sources       # Build journal metadata table
 make build-citations     # Build citation graph (slow!)
 make build-if-indexes    # Build IF calculation indexes
@@ -149,7 +154,7 @@ CREATE VIRTUAL TABLE works_fts USING fts5(
 );
 ```
 
-### Impact Factor Tables (Optional)
+### SciTeX IF Tables (Optional)
 
 ```sql
 -- Sources: 255K journals with metrics
@@ -162,7 +167,7 @@ CREATE TABLE sources (
     type TEXT,
     works_count INTEGER,
     cited_by_count INTEGER,
-    two_year_mean_citedness REAL,  -- Impact Factor proxy
+    two_year_mean_citedness REAL,  -- SciTeX IF proxy
     h_index INTEGER,
     i10_index INTEGER,
     is_oa INTEGER,
@@ -183,7 +188,7 @@ CREATE TABLE citations (
 );
 ```
 
-### Indexes for IF Calculation
+### Indexes for SciTeX IF Calculation
 
 ```sql
 -- Works table (for finding articles by journal+year)
@@ -198,13 +203,17 @@ CREATE INDEX idx_citations_citing ON citations(citing_id);
 CREATE INDEX idx_citations_year ON citations(citing_year);
 ```
 
-## Impact Factor Calculation
+## SciTeX Impact Factor (OpenAlex) Calculation
+
+Note: We use "SciTeX Impact Factor" or "SciTeX IF" to distinguish from
+the trademarked "Journal Impact Factor" (JCR/Clarivate). Our calculation
+uses the same formula but with OpenAlex data.
 
 ### Formula
 ```
-IF(2023) = Citations in 2023 to articles from 2021-2022
-           ─────────────────────────────────────────────
-           Citable articles published in 2021-2022
+SciTeX IF(2023) = Citations in 2023 to articles from 2021-2022
+                  ─────────────────────────────────────────────
+                  Citable articles published in 2021-2022
 ```
 
 ### Data Flow
@@ -218,12 +227,12 @@ IF(2023) = Citations in 2023 to articles from 2021-2022
 3. Calculate: IF = citations / articles
 ```
 
-### Two IF Sources
+### Two SciTeX IF Sources
 
 | Source | Table | Speed | Accuracy |
 |--------|-------|-------|----------|
 | OpenAlex proxy | `sources.two_year_mean_citedness` | Fast | Good proxy |
-| Calculated | `citations` table | Slower | JCR-like |
+| Calculated | `citations` table | Slower | JCR-style |
 
 ## Resource Requirements
 
@@ -231,7 +240,7 @@ IF(2023) = Citations in 2023 to articles from 2021-2022
 |-------|------|----------|-------|
 | Download | 760GB | 1-2 days | At 5-10 MB/s |
 | Core Build | +1TB | 12-48h | DB + FTS |
-| IF Build | +300GB | 50-70h | Citations + indexes |
+| SciTeX IF Build | +300GB | 50-70h | Citations + indexes |
 | **Total** | **~2TB** | **3-5 days** | |
 
 ## Monitoring Progress

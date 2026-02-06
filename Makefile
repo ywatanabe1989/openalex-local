@@ -17,7 +17,8 @@ SNAPSHOT_DIR := $(PROJECT_ROOT)/data/snapshot/works
 
 .PHONY: help status check install dev test \
         download download-works download-others download-stop \
-        build build-db build-fts build-sources build-citations build-if-indexes build-info \
+        build build-db build-fts build-sources build-citations build-if-indexes \
+        build-ref-count build-if-table build-if-validate build-info \
         clean lint format db-info db-stats
 
 # ============================================================
@@ -131,9 +132,9 @@ build-fts: ## Build FTS5 full-text search index (background)
 build-fts-fg: ## Build FTS index (foreground, for debugging)
 	$(PYTHON) $(SCRIPTS)/database/03_build_fts_index.py
 
-build-sources: ## Build sources/journals table for impact factors (background)
+build-sources: ## Build sources/journals table for SciTeX IF (background)
 	@echo "Starting sources table build..."
-	@echo "This indexes journal metadata with impact factors from snapshot."
+	@echo "This indexes journal metadata with SciTeX IF from snapshot."
 	@echo ""
 	@mkdir -p $(PROJECT_ROOT)/logs
 	@screen -dmS openalex-build-sources bash -c '$(PYTHON) $(SCRIPTS)/database/04_build_sources_table.py 2>&1 | tee $(PROJECT_ROOT)/logs/build_sources.log'
@@ -143,9 +144,9 @@ build-sources: ## Build sources/journals table for impact factors (background)
 build-sources-fg: ## Build sources table (foreground)
 	$(PYTHON) $(SCRIPTS)/database/04_build_sources_table.py
 
-build-citations: ## Build citations table for IF calculation (background, ~50-70h)
+build-citations: ## Build citations table for SciTeX IF calculation (background, ~50-70h)
 	@echo "Starting citations table build..."
-	@echo "This extracts citation relationships for accurate IF calculation."
+	@echo "This extracts citation relationships for accurate SciTeX IF calculation."
 	@echo "WARNING: This takes 50-70 hours and adds ~200-300GB to database."
 	@echo ""
 	@mkdir -p $(PROJECT_ROOT)/logs
@@ -160,8 +161,8 @@ build-citations: ## Build citations table for IF calculation (background, ~50-70
 build-citations-fg: ## Build citations table (foreground)
 	$(PYTHON) $(SCRIPTS)/database/05_build_citations_table.py
 
-build-if-indexes: ## Build indexes for fast IF calculation (after citations)
-	@echo "Building indexes for Impact Factor calculation..."
+build-if-indexes: ## Build indexes for fast SciTeX IF calculation (after citations)
+	@echo "Building indexes for SciTeX IF calculation..."
 	@echo "Run this AFTER build-citations completes."
 	@echo ""
 	@mkdir -p $(PROJECT_ROOT)/logs
@@ -169,8 +170,35 @@ build-if-indexes: ## Build indexes for fast IF calculation (after citations)
 	@echo "Build started in screen session: openalex-build-if-indexes"
 	@echo "Monitor: tail -f logs/build_if_indexes.log"
 
-build-if-indexes-fg: ## Build IF indexes (foreground)
+build-if-indexes-fg: ## Build SciTeX IF indexes (foreground)
 	$(PYTHON) $(SCRIPTS)/database/06_build_if_indexes.py
+
+build-ref-count: ## Add ref_count column for citable items filter (~1-2h)
+	@echo "Adding ref_count column for SciTeX IF citable items filter..."
+	@echo "This enables fast filtering of articles with >20 references."
+	@echo ""
+	@mkdir -p $(PROJECT_ROOT)/logs
+	@screen -dmS openalex-build-refcount bash -c '$(PYTHON) $(SCRIPTS)/database/07_add_ref_count_column.py 2>&1 | tee $(PROJECT_ROOT)/logs/build_ref_count.log'
+	@echo "Build started in screen session: openalex-build-refcount"
+	@echo "Monitor: tail -f logs/build_ref_count.log"
+
+build-ref-count-fg: ## Add ref_count column (foreground)
+	$(PYTHON) $(SCRIPTS)/database/07_add_ref_count_column.py
+
+build-if-table: ## Precompute SciTeX Impact Factors (~2-4h)
+	@echo "Precomputing SciTeX Impact Factors (OpenAlex)..."
+	@echo "This creates journal_impact_factors table with SciTeX IF values."
+	@echo ""
+	@mkdir -p $(PROJECT_ROOT)/logs
+	@screen -dmS openalex-build-if-table bash -c '$(PYTHON) $(SCRIPTS)/database/09_build_if_table.py --full 2>&1 | tee $(PROJECT_ROOT)/logs/build_if_table.log'
+	@echo "Build started in screen session: openalex-build-if-table"
+	@echo "Monitor: tail -f logs/build_if_table.log"
+
+build-if-table-fg: ## Precompute SciTeX IF table (foreground)
+	$(PYTHON) $(SCRIPTS)/database/09_build_if_table.py --full
+
+build-if-validate: ## Validate SciTeX IF calculation against JCR (30 journals)
+	$(PYTHON) $(SCRIPTS)/database/09_build_if_table.py --validate
 
 build-stop: ## Stop all build processes
 	@echo "Stopping build processes..."
