@@ -302,47 +302,10 @@ def search_by_doi_cmd(doi, as_json, citation, bibtex, save_path, save_format):
         click.echo(f"\nOpen Access: {work.oa_url}")
 
 
-@cli.command("status")
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-def status_cmd(as_json):
-    """Show status and configuration."""
-    from .. import info
+# Status command (extracted to separate module for line limit)
+from .status import status_cmd
 
-    try:
-        status = info()
-    except FileNotFoundError as e:
-        if as_json:
-            click.echo(json.dumps({"status": "error", "error": str(e)}, indent=2))
-        else:
-            click.secho(f"Error: {e}", fg="red", err=True)
-        sys.exit(1)
-
-    if as_json:
-        click.echo(json.dumps(status, indent=2))
-        return
-
-    click.secho("OpenAlex Local Status", fg="cyan", bold=True)
-    click.echo(f"Mode: {status.get('mode', 'unknown')}")
-    click.echo(f"Status: {status.get('status', 'unknown')}")
-
-    if "db_path" in status:
-        click.echo(f"Database: {status['db_path']}")
-
-    if "work_count" in status:
-        click.echo(f"Works: {status['work_count']:,}")
-
-    if "fts_indexed" in status:
-        click.echo(f"FTS Indexed: {status['fts_indexed']:,}")
-
-    if status.get("has_sources"):
-        click.echo(
-            f"Sources/Journals: {status.get('sources_count', 0):,} (impact factors available)"
-        )
-    else:
-        click.secho(
-            "Sources: Not indexed (run scripts/database/04_build_sources_table.py for -if support)",
-            fg="yellow",
-        )
+cli.add_command(status_cmd)
 
 
 # Register MCP subcommand group
@@ -414,8 +377,16 @@ def relay(host: str, port: int, force: bool):
 
 
 @cli.command("export-if")
-@click.option("-o", "--output", default="scitex_if.csv", help="Output file (csv or json)")
-@click.option("--format", "fmt", type=click.Choice(["csv", "json"]), default=None, help="Output format (auto from extension)")
+@click.option(
+    "-o", "--output", default="scitex_if.csv", help="Output file (csv or json)"
+)
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["csv", "json"]),
+    default=None,
+    help="Output format (auto from extension)",
+)
 @click.option("--limit", type=int, default=0, help="Limit rows (0=all)")
 def export_if(output, fmt, limit):
     """Export SciTeX Impact Factors (OpenAlex) to CSV or JSON.
@@ -434,7 +405,9 @@ def export_if(output, fmt, limit):
     cursor = db.conn.cursor()
 
     # Check if table exists
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='journal_impact_factors'")
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='journal_impact_factors'"
+    )
     if not cursor.fetchone():
         click.secho("Error: journal_impact_factors table not found", fg="red")
         click.echo("Run: make build-if-table")
@@ -453,11 +426,15 @@ def export_if(output, fmt, limit):
         fmt = "json" if output.endswith(".json") else "csv"
 
     if fmt == "json":
-        data = [{"issn": r[0], "journal": r[1], "year": r[2], "scitex_if": r[3]} for r in rows]
+        data = [
+            {"issn": r[0], "journal": r[1], "year": r[2], "scitex_if": r[3]}
+            for r in rows
+        ]
         with open(output, "w") as f:
             json.dump(data, f, indent=2)
     else:
         import csv
+
         with open(output, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["issn", "journal", "year", "scitex_if"])

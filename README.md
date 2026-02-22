@@ -290,7 +290,7 @@ Updated monthly from their [snapshot](https://docs.openalex.org/download-all-dat
 <p align="center">
   <a href="https://scitex.ai"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
   <br>
-  AGPL-3.0 · ywatanabe@scitex.ai
+  AGPL-3.0
 </p>
 
 <!-- EOF -->
