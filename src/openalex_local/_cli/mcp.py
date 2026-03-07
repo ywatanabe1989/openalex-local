@@ -166,33 +166,126 @@ def mcp_installation():
 
 
 @mcp.command("list-tools", context_settings=CONTEXT_SETTINGS)
-def mcp_list_tools():
-    """List available MCP tools."""
-    click.echo("Available MCP Tools")
-    click.echo("=" * 50)
+@click.option(
+    "-v", "--verbose", count=True, help="Verbosity: -v sig, -vv +desc, -vvv full"
+)
+@click.option("-c", "--compact", is_flag=True, help="Compact signatures (single line)")
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
+def mcp_list_tools(verbose: int, compact: bool, as_json: bool):
+    """List available MCP tools.
+
+    \b
+    Verbosity levels:
+      (none)  - Tool names only
+      -v      - Signatures
+      -vv     - Signatures + one-line description
+      -vvv    - Signatures + full description
+    """
+    try:
+        from .mcp_server import mcp as mcp_server
+    except ImportError:
+        click.secho("ERROR: Could not import MCP server", fg="red", err=True)
+        click.echo("Install with: pip install openalex-local[mcp]")
+        raise SystemExit(1)
+
+    tools_dict = getattr(mcp_server._tool_manager, "_tools", {})
+    modules = {}
+    for name in sorted(tools_dict.keys()):
+        prefix = name.split("_")[0]
+        if prefix not in modules:
+            modules[prefix] = []
+        modules[prefix].append(name)
+
+    if as_json:
+        import json
+
+        output = {
+            "name": "openalex-local",
+            "total": len(tools_dict),
+            "modules": {
+                mod: {
+                    "count": len(tool_list),
+                    "tools": [
+                        {
+                            "name": t,
+                            "description": tools_dict[t].description
+                            if tools_dict.get(t)
+                            else "",
+                        }
+                        for t in tool_list
+                    ],
+                }
+                for mod, tool_list in modules.items()
+            },
+        }
+        click.echo(json.dumps(output, indent=2))
+        return
+
+    total = len(tools_dict)
+    click.secho("OpenAlex Local MCP", fg="cyan", bold=True)
+    click.echo(f"Tools: {total} ({len(modules)} modules)")
     click.echo()
-    click.echo("1. search")
-    click.echo("   Search for academic works by title, abstract, or authors.")
-    click.echo("   Parameters:")
-    click.echo("     - query (str): Search query")
-    click.echo("     - limit (int): Max results (default: 10, max: 100)")
-    click.echo("     - offset (int): Skip first N results")
-    click.echo("     - with_abstracts (bool): Include abstracts")
-    click.echo()
-    click.echo("2. search_by_id")
-    click.echo("   Get detailed information about a work by OpenAlex ID or DOI.")
-    click.echo("   Parameters:")
-    click.echo("     - identifier (str): OpenAlex ID or DOI")
-    click.echo("     - as_citation (bool): Return formatted citation")
-    click.echo()
-    click.echo("3. status")
-    click.echo("   Get database statistics and status.")
-    click.echo("   Parameters: none")
-    click.echo()
-    click.echo("4. enrich_ids")
-    click.echo("   Enrich OpenAlex IDs or DOIs with full metadata.")
-    click.echo("   Parameters:")
-    click.echo("     - identifiers (list[str]): List of OpenAlex IDs or DOIs")
+
+    for mod, tool_list in sorted(modules.items()):
+        click.secho(f"{mod}: {len(tool_list)} tools", fg="green", bold=True)
+        for tool_name in tool_list:
+            tool_obj = tools_dict.get(tool_name)
+
+            if verbose == 0:
+                click.echo(f"  {tool_name}")
+            else:
+                sig = (
+                    _format_signature(tool_obj, multiline=not compact)
+                    if tool_obj
+                    else f"  {tool_name}"
+                )
+                click.echo(sig)
+                if verbose >= 2 and tool_obj and tool_obj.description:
+                    desc = tool_obj.description.split("\n")[0].strip()
+                    click.echo(f"    {desc}")
+                    if verbose >= 3:
+                        for line in tool_obj.description.strip().split("\n")[1:]:
+                            click.echo(f"    {line}")
+                    click.echo()
+        click.echo()
+
+
+def _format_signature(tool_obj, multiline: bool = False, indent: str = "  ") -> str:
+    """Format tool as Python-like function signature."""
+    import inspect
+
+    params = []
+    if hasattr(tool_obj, "parameters") and tool_obj.parameters:
+        schema = tool_obj.parameters
+        props = schema.get("properties", {})
+        required = schema.get("required", [])
+        for name, pinfo in props.items():
+            ptype = pinfo.get("type", "any")
+            default = pinfo.get("default")
+            if name in required:
+                p = f"{click.style(name, fg='white', bold=True)}: {click.style(ptype, fg='cyan')}"
+            elif default is not None:
+                def_str = repr(default) if len(repr(default)) < 20 else "..."
+                p = f"{click.style(name, fg='white', bold=True)}: {click.style(ptype, fg='cyan')} = {click.style(def_str, fg='yellow')}"
+            else:
+                p = f"{click.style(name, fg='white', bold=True)}: {click.style(ptype, fg='cyan')} = {click.style('None', fg='yellow')}"
+            params.append(p)
+    ret_type = ""
+    if hasattr(tool_obj, "fn") and tool_obj.fn:
+        try:
+            sig = inspect.signature(tool_obj.fn)
+            if sig.return_annotation != inspect.Parameter.empty:
+                ret = sig.return_annotation
+                ret_name = ret.__name__ if hasattr(ret, "__name__") else str(ret)
+                ret_type = f" -> {click.style(ret_name, fg='magenta')}"
+        except Exception:
+            pass
+    name_s = click.style(tool_obj.name, fg="green", bold=True)
+    if multiline and len(params) > 2:
+        param_indent = indent + "    "
+        params_str = ",\n".join(f"{param_indent}{p}" for p in params)
+        return f"{indent}{name_s}(\n{params_str}\n{indent}){ret_type}"
+    return f"{indent}{name_s}({', '.join(params)}){ret_type}"
 
 
 def run_mcp_server(transport: str, host: str, port: int, force: bool = False):
