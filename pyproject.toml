@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openalex-local"
-version = "0.4.3"
+version = "0.4.4"
 description = "Local OpenAlex database with 284M+ works, abstracts, and semantic search"
 readme = "README.md"
 license = {text = "AGPL-3.0"}
@@ -35,7 +35,7 @@ dev = [
     "pytest-asyncio>=0.21",
 ]
 mcp = [
-    "fastmcp>=0.4",
+    "fastmcp>=2.0.0",
 ]
 server = [
     "fastapi>=0.100",
@@ -54,6 +54,9 @@ all = [
 
 [project.scripts]
 openalex-local = "openalex_local._cli.cli:main"
+
+[project.entry-points."scitex_dev.docs"]
+openalex-local = "openalex_local"
 
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/openalex-local"
