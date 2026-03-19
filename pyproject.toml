@@ -58,12 +58,18 @@ openalex-local = "openalex_local._cli.cli:main"
 [project.entry-points."scitex_dev.docs"]
 openalex-local = "openalex_local"
 
+[project.entry-points."scitex_dev.skills"]
+openalex-local = "openalex_local"
+
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/openalex-local"
 Repository = "https://github.com/ywatanabe1989/openalex-local"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+openalex_local = ["skills/*.md", "skills/references/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
