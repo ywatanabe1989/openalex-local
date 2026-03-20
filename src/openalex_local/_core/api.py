@@ -238,29 +238,29 @@ def info() -> dict:
 
     # Get work count from metadata (fast) or fallback to MAX(rowid) approximation
     work_count = 0
+    # Graceful degradation: _metadata table may not exist in older databases
     try:
         row = db.fetchone("SELECT value FROM _metadata WHERE key = 'total_works'")
         if row:
             work_count = int(row["value"])
     except Exception:
-        pass
+        pass  # _metadata table may not exist; fall through to MAX(rowid)
 
     if work_count == 0:
-        # Fallback: use MAX(rowid) as approximation (much faster than COUNT(*))
         try:
             row = db.fetchone("SELECT MAX(rowid) as count FROM works")
             work_count = row["count"] if row else 0
         except Exception:
             work_count = 0
 
-    # Get FTS count from metadata (fast) or fallback
+    # Graceful degradation: _metadata table may not exist in older databases
     fts_count = 0
     try:
         row = db.fetchone("SELECT value FROM _metadata WHERE key = 'fts_total_indexed'")
         if row:
             fts_count = int(row["value"])
     except Exception:
-        pass
+        pass  # _metadata table may not exist; fall through to MAX(rowid)
 
     if fts_count == 0:
         try:
@@ -269,7 +269,7 @@ def info() -> dict:
         except Exception:
             fts_count = 0
 
-    # Check for sources table
+    # Sources table is optional (requires build step 04)
     sources_count = 0
     has_sources = False
     try:
@@ -278,7 +278,7 @@ def info() -> dict:
             row = db.fetchone("SELECT COUNT(*) as count FROM sources")
             sources_count = row["count"] if row else 0
     except Exception:
-        pass
+        pass  # sources table not built yet
 
     return {
         "status": "ok",

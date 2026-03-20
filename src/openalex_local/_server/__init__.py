@@ -78,7 +78,19 @@ def info():
     """Get database statistics."""
     from .._core.db import get_db
 
-    db = get_db()
+    try:
+        db = get_db()
+    except Exception as e:
+        return {
+            "name": "OpenAlex Local API",
+            "version": __version__,
+            "status": "error",
+            "error": f"Database unavailable: {e}",
+            "mode": "local",
+            "total_works": 0,
+            "fts_indexed": 0,
+            "database_path": None,
+        }
 
     # Use _metadata table for pre-computed counts (COUNT(*) on 459M rows is too slow)
     work_count = 0
@@ -91,7 +103,7 @@ def info():
         if row:
             fts_count = int(row["value"])
     except Exception:
-        pass
+        pass  # _metadata table may not exist in older databases
 
     return {
         "name": "OpenAlex Local API",

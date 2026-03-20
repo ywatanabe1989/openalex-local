@@ -9,7 +9,7 @@ description = "Local OpenAlex database with 284M+ works, abstracts, and semantic
 readme = "README.md"
 license = {text = "AGPL-3.0"}
 authors = [
-    {name = "Yusuke Watanabe", email = "ywatanabe@alumni.u-tokyo.ac.jp"}
+    {name = "Yusuke Watanabe", email = "ywatanabe@scitex.ai"}
 ]
 requires-python = ">=3.10"
 classifiers = [
@@ -33,6 +33,7 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "pytest-asyncio>=0.21",
+    "scitex-dev>=0.1.0",
 ]
 mcp = [
     "fastmcp>=2.0.0",
