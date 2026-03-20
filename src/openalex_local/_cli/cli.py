@@ -443,6 +443,16 @@ def export_if(output, fmt, limit):
     click.secho(f"Exported {len(rows):,} SciTeX IF values to {output}", fg="green")
 
 
+# Register docs and skills subcommands (from scitex-dev)
+try:
+    from scitex_dev.cli import docs_click_group, skills_click_group
+
+    cli.add_command(docs_click_group(package="openalex-local"))
+    cli.add_command(skills_click_group(package="openalex-local"))
+except ImportError:
+    pass
+
+
 @cli.command("list-python-apis")
 @click.option(
     "-v", "--verbose", count=True, help="Verbosity: -v sig, -vv +doc, -vvv full"

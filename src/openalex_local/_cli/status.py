@@ -20,7 +20,7 @@ def status_cmd(as_json):
     if as_json:
         try:
             status_data = info()
-        except (FileNotFoundError, ConnectionError, OSError) as e:
+        except Exception as e:
             click.echo(
                 json_module.dumps({"status": "error", "error": str(e)}, indent=2)
             )

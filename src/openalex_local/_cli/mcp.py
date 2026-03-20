@@ -188,7 +188,16 @@ def mcp_list_tools(verbose: int, compact: bool, as_json: bool):
         click.echo("Install with: pip install openalex-local[mcp]")
         raise SystemExit(1)
 
-    tools_dict = getattr(mcp_server._tool_manager, "_tools", {})
+    try:
+        from scitex_dev import get_tools_sync
+    except ImportError:
+        click.secho(
+            "ERROR: scitex_dev.get_tools_sync not available", fg="red", err=True
+        )
+        click.echo("Update with: pip install --upgrade scitex-dev")
+        raise SystemExit(1)
+
+    tools_dict = get_tools_sync(mcp_server)
     modules = {}
     for name in sorted(tools_dict.keys()):
         prefix = name.split("_")[0]
