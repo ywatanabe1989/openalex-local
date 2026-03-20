@@ -1,6 +1,12 @@
-# OpenAlex Local
+# OpenAlex Local (<code>openalex-local</code>)
 
-Local OpenAlex database with 284M+ scholarly works, abstracts, and semantic search.
+<p align="center">
+  <a href="https://scitex.ai">
+    <img src="docs/scitex-logo-blue-cropped.png" alt="SciTeX" width="400">
+  </a>
+</p>
+
+<p align="center"><b>Local OpenAlex database with 284M+ scholarly works, abstracts, and semantic search</b></p>
 
 <p align="center">
   <img src="docs/scitex_if_validation.png" alt="SciTeX IF vs JCR Validation" width="600"/>
@@ -285,12 +291,35 @@ Updated monthly from their [snapshot](https://docs.openalex.org/download-all-dat
 
 </details>
 
+## Part of SciTeX
+
+OpenAlex Local is part of [**SciTeX**](https://scitex.ai). When used inside the SciTeX framework, literature search integrates with the scholar module:
+
+```python
+import scitex
+
+# Search local OpenAlex database via SciTeX
+results = scitex.scholar.search("neural oscillations gamma band")
+
+# Enrich BibTeX with OpenAlex metadata
+scitex.scholar.enrich_bibtex("references.bib")
+```
+
+The SciTeX system follows the Four Freedoms for Research below, inspired by [the Free Software Definition](https://www.gnu.org/philosophy/free-sw.en.html):
+
+>Four Freedoms for Research
+>
+>0. The freedom to **run** your research anywhere — your machine, your terms.
+>1. The freedom to **study** how every step works — from raw data to final manuscript.
+>2. The freedom to **redistribute** your workflows, not just your papers.
+>3. The freedom to **modify** any module and share improvements with the community.
+>
+>AGPL-3.0 — because we believe research infrastructure deserves the same freedoms as the software it runs on.
+
 ---
 
 <p align="center">
-  <a href="https://scitex.ai"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
-  <br>
-  AGPL-3.0
+  <a href="https://scitex.ai" target="_blank"><img src="docs/scitex-icon-navy-inverted.png" alt="SciTeX" width="40"/></a>
 </p>
 
 <!-- EOF -->
