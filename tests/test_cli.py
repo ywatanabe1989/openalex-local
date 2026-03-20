@@ -6,7 +6,7 @@ from click.testing import CliRunner
 from openalex_local._cli.cli import cli
 
 try:
-    import scitex_dev  # noqa: F401
+    from scitex_dev import get_tools_sync  # noqa: F401
 
     _has_scitex_dev = True
 except ImportError:
