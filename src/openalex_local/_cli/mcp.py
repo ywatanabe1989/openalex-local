@@ -188,10 +188,9 @@ def mcp_list_tools(verbose: int, compact: bool, as_json: bool):
         click.echo("Install with: pip install openalex-local[mcp]")
         raise SystemExit(1)
 
-    import asyncio
+    from scitex_dev import get_tools_sync
 
-    tools_list = asyncio.run(mcp_server.list_tools())
-    tools_dict = {t.name: t for t in tools_list}
+    tools_dict = get_tools_sync(mcp_server)
     modules = {}
     for name in sorted(tools_dict.keys()):
         prefix = name.split("_")[0]
