@@ -1,5 +1,4 @@
 ---
-name: openalex-local
 description: Local OpenAlex database with 284M+ works, abstracts, and semantic search for academic literature.
 allowed-tools: mcp__scitex__openalex_*
 ---
