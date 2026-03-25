@@ -11,6 +11,7 @@ Local OpenAlex database with 284M+ works and full-text search.
 
 - [quick-start.md](quick-start.md) — Basic usage
 - [search-syntax.md](search-syntax.md) — FTS5 query syntax
+- [database-setup.md](database-setup.md) — Database architecture, build pipeline, access modes
 - [cli-reference.md](cli-reference.md) — CLI commands
 - [mcp-tools.md](mcp-tools.md) — MCP tools for AI agents
 
