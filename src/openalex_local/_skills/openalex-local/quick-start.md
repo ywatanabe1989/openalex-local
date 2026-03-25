@@ -1,5 +1,4 @@
 ---
-name: quick-start
 description: Basic search and lookup — full-text search, DOI lookup, enrichment.
 ---
 
