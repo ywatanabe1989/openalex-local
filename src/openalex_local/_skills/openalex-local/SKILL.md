@@ -5,6 +5,14 @@ allowed-tools: mcp__scitex__openalex_*
 
 # openalex-local
 
+## Installation
+
+```bash
+pip install openalex-local
+# Development:
+pip install -e /home/ywatanabe/proj/openalex-local
+```
+
 Local OpenAlex database with 284M+ works and full-text search.
 
 ## Sub-skills
