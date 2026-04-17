@@ -70,7 +70,10 @@ Repository = "https://github.com/ywatanabe1989/openalex-local"
 where = ["src"]
 
 [tool.setuptools.package-data]
-openalex_local = ["skills/*.md", "skills/references/*.md"]
+openalex_local = [
+    "_skills/**/*.md",
+    "_skills/**/*.txt",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
