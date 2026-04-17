@@ -1,6 +1,5 @@
 ---
-name: search-syntax
-description: FTS5 full-text search syntax — operators, phrases, filters.
+description: FTS5 full-text search syntax — operators, phrases, async, cache.
 ---
 
 # Search Syntax
@@ -8,6 +7,8 @@ description: FTS5 full-text search syntax — operators, phrases, filters.
 Uses SQLite FTS5 for full-text search across 284M+ works.
 
 ```python
+from openalex_local import search
+
 # Simple terms
 search("neural network")
 
@@ -30,13 +31,26 @@ from openalex_local import aio
 
 async def main():
     results = await aio.search("machine learning")
-    counts = await aio.count_many(["CRISPR", "neural network"])
+    n = await aio.count("CRISPR")
+    work = await aio.get("W2741809807")
+    works = await aio.get_many(["W1", "W2"])
 ```
 
-## Caching
+Available: `aio.search`, `aio.search_many`, `aio.count`, `aio.count_many`,
+`aio.get`, `aio.get_many`, `aio.exists`, `aio.info`.
+
+## Local cache
+
+Persist results for offline reuse:
 
 ```python
 from openalex_local import cache
-# Cache search results for repeated queries
-cached = cache.search("frequently searched term")
+
+info = cache.create("ml_papers", query="machine learning", limit=1000)
+papers = cache.query("ml_papers", year_min=2020)
+ids    = cache.query_ids("ml_papers")
+cache.stats("ml_papers")
+cache.export("ml_papers", "ml.bib", format="bibtex")
 ```
+
+Other cache helpers: `append`, `load`, `exists`, `list_caches`, `delete`, `info`.

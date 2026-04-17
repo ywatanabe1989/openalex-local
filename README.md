@@ -50,19 +50,27 @@ git clone https://github.com/ywatanabe1989/openalex-local
 cd openalex-local && make install
 ```
 
-Database setup (~300 GB, ~1-2 days to build):
+Database setup (~300 GB works snapshot, days to build):
 ```bash
-# Check system status
+# Check system status / prerequisites
 make status
+make check
 
-# 1. Download OpenAlex Works snapshot (~300GB)
-make download-screen  # runs in background
+# 1. Download OpenAlex snapshot (background, ~300-700 GB)
+make download           # all entities
+# or: make download-works / make download-others
 
 # 2. Build SQLite database
 make build-db
 
-# 3. Build FTS5 index
+# 3. Build FTS5 full-text search index
 make build-fts
+
+# 4. (Optional) SciTeX Impact Factor pipeline
+make build-sources && make build-citations && make build-if-indexes && make build-if-table
+
+# Keep a database up to date against the monthly snapshot
+make update             # differential merge since last sync
 ```
 
 </details>
@@ -71,21 +79,28 @@ make build-fts
 <summary><strong>Python API</strong></summary>
 
 ```python
-from openalex_local import search, get, count
+from openalex_local import search, get, count, get_many, enrich_ids, save
 
-# Full-text search (title + abstract)
-results = search("machine learning neural networks")
-for work in results:
+# Full-text search (title + abstract, FTS5)
+results = search("machine learning neural networks", limit=10)
+for work in results.works:
     print(f"{work.title} ({work.year})")
-    print(f"  Abstract: {work.abstract[:200]}...")
+    if work.abstract:
+        print(f"  Abstract: {work.abstract[:200]}...")
     print(f"  Concepts: {[c['name'] for c in work.concepts]}")
 
 # Get by OpenAlex ID or DOI
 work = get("W2741809807")
 work = get("10.1038/nature12373")
 
-# Count matches
-n = count("CRISPR")
+# Batch / count / enrich / export
+works    = get_many(["W2741809807", "10.1038/nature12373"])
+n        = count("CRISPR")
+enriched = enrich_ids(["W2741809807"])
+save(results, "results.bib", format="bibtex")
+
+# Async variants
+from openalex_local import aio  # aio.search, aio.get, aio.count, ...
 ```
 
 </details>
@@ -95,9 +110,11 @@ n = count("CRISPR")
 
 ```bash
 openalex-local search "CRISPR genome editing" -n 5
-openalex-local search-by-doi W2741809807
+openalex-local search-by-doi W2741809807          # accepts OpenAlex ID or DOI
 openalex-local search-by-doi 10.1038/nature12373
-openalex-local status  # Configuration and database stats
+openalex-local status                              # configuration + DB stats
+openalex-local export-if -o scitex_if.csv          # SciTeX IF export
+openalex-local --help-recursive                    # full command tree
 ```
 
 With abstracts (`-a` flag):
@@ -200,11 +217,11 @@ openalex-local mcp list-tools    # Show available MCP tools
 openalex-local mcp installation  # Show client config examples
 ```
 
-Available tools:
-- `search` - Full-text search across 284M+ papers
-- `search_by_id` - Get paper by OpenAlex ID or DOI
-- `enrich_ids` - Batch lookup with metadata
-- `status` - Database statistics
+Available tools (FastMCP, verified from `_cli/mcp_server.py`):
+- `search` — FTS5 full-text search across 284M+ papers
+- `search_by_id` — Get a paper by OpenAlex ID or DOI
+- `enrich_ids` — Batch-fetch full metadata (abstract, concepts, OA) for IDs/DOIs
+- `status` — Database statistics (work count, FTS count, path)
 
 </details>
 

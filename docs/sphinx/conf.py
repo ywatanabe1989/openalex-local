@@ -15,7 +15,13 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = "OpenAlex Local"
 copyright = "2025, Yusuke Watanabe"
 author = "Yusuke Watanabe"
-release = "0.4.0"
+
+try:
+    from importlib.metadata import version as _pkg_version
+
+    release = _pkg_version("openalex-local")
+except Exception:
+    release = "0.7.0"
 
 # -- General configuration ---------------------------------------------------
 

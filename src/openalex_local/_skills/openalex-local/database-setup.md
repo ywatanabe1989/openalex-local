@@ -1,5 +1,4 @@
 ---
-name: database-setup
 description: Database architecture, build pipeline, access modes, and deployment options.
 ---
 

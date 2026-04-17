@@ -12,6 +12,13 @@ try:
 except ImportError:
     _has_scitex_dev = False
 
+try:
+    import fastmcp  # noqa: F401
+
+    _has_fastmcp = True
+except ImportError:
+    _has_fastmcp = False
+
 
 class TestCLI:
     """Test CLI commands."""
@@ -87,8 +94,8 @@ class TestCLICommands:
         self.runner = CliRunner()
 
     @pytest.mark.skipif(
-        not _has_scitex_dev,
-        reason="scitex_dev not installed",
+        not (_has_scitex_dev and _has_fastmcp),
+        reason="scitex_dev or fastmcp not installed",
     )
     def test_mcp_list_tools(self):
         """Test mcp list-tools runs."""
