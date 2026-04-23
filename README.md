@@ -291,6 +291,13 @@ Updated monthly from their [snapshot](https://docs.openalex.org/download-all-dat
 
 </details>
 
+## Problem and Solution
+
+
+| # | Problem | Solution |
+|---|---------|----------|
+| 1 | **OpenAlex API is the largest open bibliographic database but large-scale use needs caching** -- rate limits trip at hundreds of requests/second | **Local SQLite + FTS5 (284M works)** -- offline queries including abstracts, author affiliations, citation counts |
+
 ## Part of SciTeX
 
 OpenAlex Local is part of [**SciTeX**](https://scitex.ai). When used inside the SciTeX framework, literature search integrates with the scholar module:
