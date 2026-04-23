@@ -5,23 +5,26 @@ allowed-tools: mcp__scitex__openalex_*
 
 # openalex-local
 
-## Installation
+## Installation & import
 
-```bash
-pip install openalex-local
-# Development:
-pip install -e /home/ywatanabe/proj/openalex-local
+`pip install openalex-local` installs the standalone:
+
+```python
+import openalex_local
 ```
 
-Local OpenAlex database with 284M+ works and full-text search.
+This package does not ship as a submodule of the `scitex` umbrella.
 
 ## Sub-skills
 
-- [quick-start.md](quick-start.md) — Basic usage
-- [search-syntax.md](search-syntax.md) — FTS5 query syntax
-- [database-setup.md](database-setup.md) — Database architecture, build pipeline, access modes
-- [cli-reference.md](cli-reference.md) — CLI commands
-- [mcp-tools.md](mcp-tools.md) — MCP tools for AI agents
+### Core
+- [01_quick-start.md](01_quick-start.md) — Basic usage
+- [02_search-syntax.md](02_search-syntax.md) — FTS5 query syntax
+
+### Workflows
+- [10_database-setup.md](10_database-setup.md) — Database architecture, build pipeline, access modes
+- [11_cli-reference.md](11_cli-reference.md) — CLI commands
+- [12_mcp-tools.md](12_mcp-tools.md) — MCP tools for AI agents
 
 ## CLI
 
