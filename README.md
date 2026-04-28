@@ -291,6 +291,8 @@ Updated monthly from their [snapshot](https://docs.openalex.org/download-all-dat
 
 </details>
 
+> **Interfaces:** Python ⭐⭐⭐ (primary) · CLI ⭐⭐ · MCP ⭐⭐ · Skills ⭐⭐ · Hook — · HTTP —
+
 ## Problem and Solution
 
 
