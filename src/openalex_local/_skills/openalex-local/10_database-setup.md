@@ -1,5 +1,7 @@
 ---
 description: Database architecture, build pipeline, access modes, and deployment options.
+name: database-setup
+tags: [openalex-local, scitex-package]
 ---
 
 # Database Setup and Architecture
