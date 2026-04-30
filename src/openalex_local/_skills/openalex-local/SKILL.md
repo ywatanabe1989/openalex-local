@@ -9,6 +9,8 @@ interfaces:
   skills: 2
   hook: 0
   http: 0
+name: openalex-local
+tags: [openalex-local, scitex-package]
 ---
 
 # openalex-local

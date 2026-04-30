@@ -8,6 +8,8 @@ Example:
     >>> work = get("10.1038/nature12373")  # or DOI
 """
 
+from __future__ import annotations
+
 import importlib.metadata
 
 __version__ = importlib.metadata.version("openalex-local")
@@ -39,6 +41,7 @@ from . import aio
 from . import cache
 
 __all__ = [
+    "__version__",
     # Core functions
     "search",
     "count",

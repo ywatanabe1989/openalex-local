@@ -1,5 +1,7 @@
 ---
 description: MCP tools for OpenAlex search and lookup.
+name: mcp-tools
+tags: [openalex-local, scitex-package]
 ---
 
 # MCP Tools
