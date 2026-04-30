@@ -1,5 +1,4 @@
 ---
-name: search-syntax
 description: FTS5 full-text search syntax — operators, phrases, filters.
 ---
 

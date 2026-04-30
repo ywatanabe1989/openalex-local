@@ -1,5 +1,4 @@
 ---
-name: cli-reference
 description: CLI commands for openalex-local.
 ---
 

@@ -1,19 +1,40 @@
 ---
-name: openalex-local
-description: Local OpenAlex database with 284M+ works, abstracts, and semantic search for academic literature.
+description: Offline, zero-API-key search over the full OpenAlex academic corpus — 284M+ works, abstracts, authors, DOIs in a local SQLite + FTS5 index. Public API — search (full-text), get / get_many (by OpenAlex ID or DOI), exists, count, info, enrich_ids (batch metadata upgrade), configure / get_mode (local vs remote), save (export to JSON/BibTeX/text), plus `jobs`, `aio` (async), and `cache` submodules. Drop-in replacement for `pyalex.Works().search(...)`, the OpenAlex HTTP API (`https://api.openalex.org/works?search=...`), `requests.get` on DOI resolvers, and `bibtexparser` fetch helpers — but works offline, has no rate limits, and returns in milliseconds instead of seconds. Use whenever the user asks to "search papers", "find literature on X", "look up a DOI", "get metadata for this paper", "enrich these OpenAlex IDs", "batch-resolve DOIs to BibTeX", "search by title/abstract/author", "export citations as .bib", or mentions OpenAlex, FTS5 search on papers, local academic database, or wants to avoid hitting the OpenAlex HTTP API.
 allowed-tools: mcp__scitex__openalex_*
+primary_interface: python
+interfaces:
+  python: 3
+  cli: 2
+  mcp: 2
+  skills: 2
+  hook: 0
+  http: 0
 ---
 
 # openalex-local
 
-Local OpenAlex database with 284M+ works and full-text search.
+> **Interfaces:** Python ⭐⭐⭐ (primary) · CLI ⭐⭐ · MCP ⭐⭐ · Skills ⭐⭐ · Hook — · HTTP —
+
+## Installation & import
+
+`pip install openalex-local` installs the standalone:
+
+```python
+import openalex_local
+```
+
+This package does not ship as a submodule of the `scitex` umbrella.
 
 ## Sub-skills
 
-- [quick-start.md](quick-start.md) — Basic usage
-- [search-syntax.md](search-syntax.md) — FTS5 query syntax
-- [cli-reference.md](cli-reference.md) — CLI commands
-- [mcp-tools.md](mcp-tools.md) — MCP tools for AI agents
+### Core
+- [01_quick-start.md](01_quick-start.md) — Basic usage
+- [02_search-syntax.md](02_search-syntax.md) — FTS5 query syntax
+
+### Workflows
+- [10_database-setup.md](10_database-setup.md) — Database architecture, build pipeline, access modes
+- [11_cli-reference.md](11_cli-reference.md) — CLI commands
+- [12_mcp-tools.md](12_mcp-tools.md) — MCP tools for AI agents
 
 ## CLI
 

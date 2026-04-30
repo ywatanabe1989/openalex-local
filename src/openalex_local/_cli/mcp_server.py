@@ -157,7 +157,7 @@ def search_by_id(
 
 @mcp.tool()
 def status() -> str:
-    """Get database statistics and status.
+    """Report local OpenAlex database status — path, work count (should be ~284M), FTS5 index size, and access mode (local / remote). Use when the user asks "is the OpenAlex db ready?", "how many papers do I have?", "check openalex-local status", "is the FTS index built?", or before running a search to verify the db is usable.
 
     Returns:
         JSON string with database path, work count, FTS index count.

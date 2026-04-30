@@ -16,6 +16,7 @@ DB_PATH := $(PROJECT_ROOT)/data/openalex.db
 SNAPSHOT_DIR := $(PROJECT_ROOT)/data/snapshot/works
 
 .PHONY: help status check install dev test \
+        update update-dry-run update-since \
         download download-works download-others download-stop \
         build build-db build-fts build-sources build-citations build-if-indexes \
         build-ref-count build-if-table build-if-validate build-info \
@@ -51,6 +52,26 @@ install: ## Install openalex-local package
 
 dev: ## Install with dev dependencies
 	pip install -e ".[dev]"
+
+# ============================================================
+# DIFFERENTIAL UPDATE
+# ============================================================
+# Incremental update: downloads only new/changed data since last sync
+
+update: ## Run differential update (download + merge changes since last sync)
+	@echo "Starting differential update..."
+	@mkdir -p $(PROJECT_ROOT)/logs
+	$(PYTHON) $(SCRIPTS)/database/10_differential_update.py \
+		--db-path $(DB_PATH) --snapshot-dir $(SNAPSHOT_DIR) \
+		2>&1 | tee $(PROJECT_ROOT)/logs/differential_update.log
+
+update-dry-run: ## Show what would be updated (no changes)
+	$(PYTHON) $(SCRIPTS)/database/10_differential_update.py \
+		--db-path $(DB_PATH) --snapshot-dir $(SNAPSHOT_DIR) --dry-run
+
+update-since: ## Update from specific date (use: make update-since SINCE=2026-03-01)
+	$(PYTHON) $(SCRIPTS)/database/10_differential_update.py \
+		--db-path $(DB_PATH) --snapshot-dir $(SNAPSHOT_DIR) --since $(SINCE)
 
 # ============================================================
 # DATABASE DOWNLOAD

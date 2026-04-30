@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openalex-local"
-version = "0.6.0"
+version = "0.7.5"
 description = "Local OpenAlex database with 284M+ works, abstracts, and semantic search"
 readme = "README.md"
-license = {text = "AGPL-3.0"}
+license = "AGPL-3.0-only"
 authors = [
     {name = "Yusuke Watanabe", email = "ywatanabe@scitex.ai"}
 ]
@@ -15,7 +15,6 @@ requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -70,7 +69,7 @@ Repository = "https://github.com/ywatanabe1989/openalex-local"
 where = ["src"]
 
 [tool.setuptools.package-data]
-openalex_local = ["skills/*.md", "skills/references/*.md"]
+openalex_local = ["_skills/**/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
