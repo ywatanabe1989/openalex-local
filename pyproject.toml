@@ -63,7 +63,9 @@ openalex-local = "openalex_local"
 
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/openalex-local"
+Documentation = "https://openalex-local.readthedocs.io"
 Repository = "https://github.com/ywatanabe1989/openalex-local"
+Issues = "https://github.com/ywatanabe1989/openalex-local/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
