@@ -17,6 +17,7 @@
 [![PyPI version](https://badge.fury.io/py/openalex-local.svg)](https://badge.fury.io/py/openalex-local)
 [![Documentation](https://readthedocs.org/projects/openalex-local/badge/?version=latest)](https://openalex-local.readthedocs.io/en/latest/)
 [![Tests](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml)
+[![coverage](https://img.shields.io/codecov/c/github/ywatanabe1989/openalex-local)](https://codecov.io/gh/ywatanabe1989/openalex-local)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
