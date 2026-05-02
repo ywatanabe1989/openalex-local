@@ -15,7 +15,8 @@ class AliasedGroup(click.Group):
     ALIASES = {
         "s": "search",
         "doi": "search-by-doi",
-        "st": "status",
+        "st": "show-status",
+        "status": "show-status",
     }
 
     def get_command(self, ctx, cmd_name):
@@ -56,6 +57,7 @@ def _print_recursive_help(ctx, param, value):
 
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
+@click.help_option("-h", "--help")
 @click.version_option(__version__, "-V", "--version")
 @click.option("--http", is_flag=True, help="Use HTTP API instead of direct database")
 @click.option("--api-url", help="API URL for http mode (default: auto-detect)")

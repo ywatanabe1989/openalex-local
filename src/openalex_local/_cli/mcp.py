@@ -10,7 +10,19 @@ from .. import info
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
+class _MCPAliasedGroup(click.Group):
+    """MCP group with backward-compatible aliases."""
+
+    ALIASES = {
+        "installation": "show-installation",
+    }
+
+    def get_command(self, ctx, cmd_name):
+        cmd_name = self.ALIASES.get(cmd_name, cmd_name)
+        return super().get_command(ctx, cmd_name)
+
+
+@click.group(cls=_MCPAliasedGroup, context_settings=CONTEXT_SETTINGS)
 def mcp():
     """MCP (Model Context Protocol) server commands.
 
@@ -18,7 +30,7 @@ def mcp():
     Commands:
       start        - Start the MCP server
       doctor       - Diagnose MCP setup
-      installation - Show installation instructions
+      show-installation - Show installation instructions
       list-tools   - List available MCP tools
     """
     pass
@@ -155,14 +167,41 @@ def mcp_doctor():
     click.echo("  openalex-local mcp start -t http      # HTTP transport")
 
 
-@mcp.command("installation", context_settings=CONTEXT_SETTINGS)
-def mcp_installation():
+@mcp.command("show-installation", context_settings=CONTEXT_SETTINGS)
+@click.option("--json", "as_json", is_flag=True, help="Output config as JSON")
+def mcp_installation(as_json: bool):
     """Show MCP client installation instructions.
 
     \b
     Example:
-      $ openalex-local mcp installation
+      $ openalex-local mcp show-installation
+      $ openalex-local mcp show-installation --json
     """
+    if as_json:
+        import json as _json
+
+        config = {
+            "local_stdio": {
+                "mcpServers": {
+                    "openalex-local": {
+                        "command": "openalex-local",
+                        "args": ["mcp", "start"],
+                        "env": {"OPENALEX_LOCAL_DB": "/path/to/openalex.db"},
+                    }
+                }
+            },
+            "remote_http": {
+                "server_command": "openalex-local mcp start -t http --host 0.0.0.0 --port 8083",
+                "client_config": {
+                    "mcpServers": {
+                        "openalex-remote": {"url": "http://your-server:8083/mcp"}
+                    }
+                },
+            },
+        }
+        click.echo(_json.dumps(config, indent=2))
+        return
+
     click.echo("MCP Client Configuration")
     click.echo("=" * 50)
     click.echo()

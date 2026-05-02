@@ -6,7 +6,24 @@ import sys
 import click
 
 
-@click.group("cache")
+class _CacheAliasedGroup(click.Group):
+    """Cache group with backward-compatible aliases."""
+
+    ALIASES = {
+        "stats": "show-stats",
+        "ids": "show-ids",
+    }
+
+    def get_command(self, ctx, cmd_name):
+        cmd_name = self.ALIASES.get(cmd_name, cmd_name)
+        return super().get_command(ctx, cmd_name)
+
+
+@click.group(
+    "cache",
+    cls=_CacheAliasedGroup,
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
 def cache_group():
     """Manage local paper caches."""
     pass
@@ -208,7 +225,7 @@ def cache_query(
         click.echo(f"... and {len(results) - 20} more (use --json for full output)")
 
 
-@cache_group.command("stats")
+@cache_group.command("show-stats")
 @click.argument("name")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def cache_stats(name, as_json):
@@ -216,8 +233,8 @@ def cache_stats(name, as_json):
 
     \b
     Example:
-      $ openalex-local cache stats my-cache
-      $ openalex-local cache stats my-cache --json
+      $ openalex-local cache show-stats my-cache
+      $ openalex-local cache show-stats my-cache --json
     """
     from .. import cache
 
@@ -326,22 +343,29 @@ def cache_delete(name, yes, dry_run):
     click.secho(f"Deleted cache '{name}'", fg="green")
 
 
-@cache_group.command("ids")
+@cache_group.command("show-ids")
 @click.argument("name")
-def cache_ids(name):
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON array")
+def cache_ids(name, as_json):
     """Print all OpenAlex IDs in a cache.
 
     \b
     Example:
-      $ openalex-local cache ids my-cache
-      $ openalex-local cache ids my-cache > ids.txt
+      $ openalex-local cache show-ids my-cache
+      $ openalex-local cache show-ids my-cache --json
+      $ openalex-local cache show-ids my-cache > ids.txt
     """
     from .. import cache
 
     try:
         ids = cache.query_ids(name)
-        for oid in ids:
-            click.echo(oid)
     except FileNotFoundError:
         click.secho(f"Cache not found: {name}", fg="red", err=True)
         sys.exit(1)
+
+    if as_json:
+        click.echo(json.dumps(list(ids), indent=2))
+        return
+
+    for oid in ids:
+        click.echo(oid)

@@ -6,15 +6,15 @@ import sys
 import click
 
 
-@click.command("status")
+@click.command("show-status")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def status_cmd(as_json):
     """Show status and configuration.
 
     \b
     Example:
-      $ openalex-local status
-      $ openalex-local status --json
+      $ openalex-local show-status
+      $ openalex-local show-status --json
     """
     import json as json_module
     import os
