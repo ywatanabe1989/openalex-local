@@ -1,8 +1,10 @@
 ---
-description: CLI commands for openalex-local.
-name: cli-reference
-tags: [openalex-local, scitex-package]
+description: |
+  [TOPIC] Cli Reference
+  [DETAILS] CLI commands for openalex-local.
+tags: [openalex-local-cli-reference, openalex-local]
 ---
+
 
 # CLI Reference
 

@@ -1,8 +1,10 @@
 ---
-description: Database architecture, build pipeline, access modes, and deployment options.
-name: database-setup
-tags: [openalex-local, scitex-package]
+description: |
+  [TOPIC] Database Setup
+  [DETAILS] Database architecture, build pipeline, access modes, and deployment options.
+tags: [openalex-local-database-setup, openalex-local]
 ---
+
 
 # Database Setup and Architecture
 

@@ -1,8 +1,10 @@
 ---
-description: FTS5 full-text search syntax — operators, phrases, filters.
-name: search-syntax
-tags: [openalex-local, scitex-package]
+description: |
+  [TOPIC] Search Syntax
+  [DETAILS] operators, phrases, filters.
+tags: [openalex-local-search-syntax, openalex-local]
 ---
+
 
 # Search Syntax
 

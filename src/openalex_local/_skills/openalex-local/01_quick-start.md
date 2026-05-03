@@ -1,8 +1,10 @@
 ---
-description: Basic search and lookup — full-text search, DOI lookup, enrichment.
-name: quick-start
-tags: [openalex-local, scitex-package]
+description: |
+  [TOPIC] Quick Start
+  [DETAILS] full-text search, DOI lookup, enrichment.
+tags: [openalex-local-quick-start, openalex-local]
 ---
+
 
 # Quick Start
 
