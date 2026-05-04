@@ -33,14 +33,18 @@ This package does not ship as a submodule of the `scitex` umbrella.
 
 ## Sub-skills
 
-### Core
-- [01_quick-start.md](01_quick-start.md) — Basic usage
-- [02_search-syntax.md](02_search-syntax.md) — FTS5 query syntax
+### Mandatory
+- [01_installation.md](01_installation.md) — pip install + extras + verify
+- [02_quick-start.md](02_quick-start.md) — search / get / enrich / relay
+- [03_python-api.md](03_python-api.md) — Public callables grouped by area
+- [04_cli-reference.md](04_cli-reference.md) — `openalex-local` console entry
 
 ### Workflows
 - [10_database-setup.md](10_database-setup.md) — Database architecture, build pipeline, access modes
-- [11_cli-reference.md](11_cli-reference.md) — CLI commands
+- [11_cli-reference.md](11_cli-reference.md) — historical CLI notes
 - [12_mcp-tools.md](12_mcp-tools.md) — MCP tools for AI agents
+- [13_quick-start.md](13_quick-start.md) — historical quick-start
+- [14_search-syntax.md](14_search-syntax.md) — FTS5 query syntax
 
 ## CLI
 
