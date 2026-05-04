@@ -40,6 +40,7 @@ This package does not ship as a submodule of the `scitex` umbrella.
 - [04_cli-reference.md](04_cli-reference.md) — `openalex-local` console entry
 
 ### Workflows
+- [06_http-api.md](06_http-api.md) — FastAPI routes (works search/get/batch, health/info)
 - [10_database-setup.md](10_database-setup.md) — Database architecture, build pipeline, access modes
 - [11_cli-reference.md](11_cli-reference.md) — historical CLI notes
 - [12_mcp-tools.md](12_mcp-tools.md) — MCP tools for AI agents
