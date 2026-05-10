@@ -29,7 +29,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "fastapi>=0.100,<0.116",
+    "fastapi>=0.100",
     "fastmcp>=2.0.0",
     "pytest-asyncio>=0.21",
     "pytest-cov>=4.0",
@@ -41,7 +41,7 @@ mcp = [
     "fastmcp>=2.0.0",
 ]
 server = [
-    "fastapi>=0.100,<0.116",
+    "fastapi>=0.100",
     "uvicorn>=0.23",
 ]
 docs = [
