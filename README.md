@@ -21,6 +21,52 @@
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
+## Demo
+
+<p align="center">
+  <img src="docs/scitex_if_validation.png" alt="OpenAlex Local IF Validation" width="600"/>
+</p>
+
+```bash
+# Search 284M papers locally — abstracts + semantic indices
+openalex-local search "graph neural networks for protein folding"
+
+# Resolve a DOI to full record (title, abstract, citations, IF)
+openalex-local search-by-doi 10.1038/s41586-021-03819-2
+
+# Drive from MCP / Claude Code
+openalex-local mcp serve
+```
+
+The chart above is OpenAlex-derived impact factors validated against
+JCR 2024 (r = 0.96, n = 17,042 journals).
+
+## Architecture
+
+```
+┌──────────────────────────┐
+│ OpenAlex public dump     │
+│ (~300 GB compressed)     │
+└──────────────┬───────────┘
+               │ snapshot import
+               ▼
+       ┌─────────────────────┐
+       │ openalex.db         │
+       │ (SQLite + FTS5)     │
+       │ + semantic embeds   │
+       └────────┬────────────┘
+                │
+                ▼
+   ┌──────────────────────────────────────┐
+   │ openalex-local — Python / CLI / MCP  │
+   │   search · search-by-doi · cache     │
+   │   if-validate · stats · relay        │
+   └──────────────────────────────────────┘
+```
+
+The DB lives entirely on disk; openalex-local is a thin facade over
+SQLite + FTS5 + an embedding index. No network calls during queries.
+
 <details>
 <summary><strong>Why OpenAlex Local?</strong></summary>
 

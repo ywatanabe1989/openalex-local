@@ -505,6 +505,15 @@ except ImportError:
     pass
 
 
+# Wire canonical install-shell-completion + print-shell-completion (§1a)
+try:
+    from scitex_dev._cli._completion import attach_shell_completion
+
+    attach_shell_completion(cli, prog_name="openalex-local")
+except ImportError:
+    pass
+
+
 @cli.command("list-python-apis")
 @click.option(
     "-v", "--verbose", count=True, help="Verbosity: -v sig, -vv +doc, -vvv full"

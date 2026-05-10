@@ -335,9 +335,11 @@ def cache_delete(name, yes, dry_run):
         return
 
     if not yes:
-        if not click.confirm(f"Delete cache '{name}'?"):
-            click.echo("Cancelled")
-            return
+        click.echo(
+            f"error: refusing to delete cache '{name}' without --yes/-y",
+            err=True,
+        )
+        sys.exit(2)
 
     cache.delete(name)
     click.secho(f"Deleted cache '{name}'", fg="green")
