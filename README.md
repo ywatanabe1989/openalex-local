@@ -340,6 +340,12 @@ Updated monthly from their [snapshot](https://docs.openalex.org/download-all-dat
 
 ## Installation
 
+> **Recommended**: `uv pip install openalex-local[all]` —
+> uv's Rust resolver handles the SciTeX dep set in 1-3 min where
+> pip's serial backtracker can take 30+ min on the full extras.
+> Plain `pip install` still works; the install block below shows both.
+
+
 ```bash
 pip install openalex-local              # core
 pip install openalex-local[mcp]         # + MCP server
