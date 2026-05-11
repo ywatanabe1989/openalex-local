@@ -69,8 +69,8 @@ ssh -L 31292:127.0.0.1:31292 your-server
 openalex-local auto-discovers databases at these paths (in order):
 
 1. `$OPENALEX_LOCAL_DB` (environment variable)
-2. `./data/openalex.db` (project directory)
-3. `/mnt/nas_ug/openalex_local/data/openalex.db` (NAS mount)
+2. `./data/openalex.db` (project directory; CWD-relative)
+3. `<repo-root>/data/openalex.db` (repo-anchored; works regardless of CWD)
 4. `~/.openalex_local/openalex.db` (home directory)
 
 ## Environment Variables

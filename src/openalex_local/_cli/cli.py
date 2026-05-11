@@ -160,9 +160,11 @@ def search_cmd(
         click.secho(
             "\nHint: Make sure the relay server is running:", fg="yellow", err=True
         )
-        click.secho("  1. On NAS: openalex-local relay", fg="yellow", err=True)
+        click.secho("  1. On the db-host: openalex-local relay", fg="yellow", err=True)
         click.secho(
-            "  2. SSH tunnel: ssh -L 31292:127.0.0.1:31292 nas", fg="yellow", err=True
+            "  2. SSH tunnel: ssh -L 31292:127.0.0.1:31292 <db-host>",
+            fg="yellow",
+            err=True,
         )
         sys.exit(1)
     except Exception as e:

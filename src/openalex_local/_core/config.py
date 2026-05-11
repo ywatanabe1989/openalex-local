@@ -6,13 +6,21 @@ import os as _os
 from pathlib import Path as _Path
 from typing import Optional as _Optional
 
-# Default database locations (checked in order)
+# Default database locations (checked in order). Anchored on multiple
+# roots so the DB is found regardless of which directory the caller
+# (pytest, CLI, MCP server) is invoked from. Hardcoded user-specific
+# paths (e.g. `/mnt/nas_ug/...`) were removed in favour of generic
+# repo-anchored / CWD-relative / home-cache locations — set
+# `OPENALEX_LOCAL_DB` explicitly when the DB lives somewhere else.
 DEFAULT_DB_PATHS = [
-    _Path("/home/ywatanabe/proj/openalex-local/data/openalex.db"),
-    _Path("/home/ywatanabe/proj/openalex_local/data/openalex.db"),
-    _Path("/mnt/nas_ug/openalex_local/data/openalex.db"),
-    _Path.home() / ".openalex_local" / "openalex.db",
+    # CWD-relative — works when the user runs commands from the repo root.
     _Path.cwd() / "data" / "openalex.db",
+    # Repo-relative — works regardless of CWD (e.g. when scitex-dev
+    # invokes openalex-local from `~/proj/scitex-dev/`). Anchored on
+    # this source file: <repo>/src/openalex_local/_core/config.py.
+    _Path(__file__).resolve().parents[3] / "data" / "openalex.db",
+    # User-state cache directory.
+    _Path.home() / ".openalex_local" / "openalex.db",
 ]
 
 

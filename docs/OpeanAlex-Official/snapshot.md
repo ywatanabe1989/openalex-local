@@ -1,7 +1,7 @@
 <!-- ---
 !-- Timestamp: 2026-01-25 19:23:27
 !-- Author: ywatanabe
-!-- File: /ssh:nas:/home/ywatanabe/proj/openalex-local/docs/OpeanAlex-Official/snapshot.md
+!-- File: docs/OpeanAlex-Official/snapshot.md
 !-- --- -->
 
 # OpenAlex snapshot

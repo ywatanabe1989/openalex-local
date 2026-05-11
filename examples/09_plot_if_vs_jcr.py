@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Timestamp: "2026-02-06 13:35:47 (ywatanabe)"
-# File: /ssh:nas:/home/ywatanabe/proj/openalex-local/examples/09_plot_if_vs_jcr.py
+# File: examples/09_plot_if_vs_jcr.py
 
 
 """Plot Impact Factor Comparison: OpenAlex Calculated vs JCR.
@@ -35,8 +35,7 @@ def load_data():
         "SELECT issn, factor, journal FROM factor WHERE issn IS NOT NULL AND factor IS NOT NULL"
     )
     jcr_data = {
-        row[0]: {"if": row[1], "journal": row[2]}
-        for row in jcr_cursor.fetchall()
+        row[0]: {"if": row[1], "journal": row[2]} for row in jcr_cursor.fetchall()
     }
     jcr_conn.close()
 
@@ -46,8 +45,7 @@ def load_data():
         "SELECT issn, impact_factor, journal_name FROM journal_impact_factors WHERE impact_factor IS NOT NULL"
     )
     oa_data = {
-        row[0]: {"if": row[1], "journal": row[2]}
-        for row in oa_cursor.fetchall()
+        row[0]: {"if": row[1], "journal": row[2]} for row in oa_cursor.fetchall()
     }
     oa_conn.close()
 
