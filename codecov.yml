@@ -1,0 +1,17 @@
+coverage:
+  status:
+    project:
+      default:
+        # auto = compare against base branch; tighten to a fixed target
+        # (e.g. 90%) once the suite stabilises.
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false

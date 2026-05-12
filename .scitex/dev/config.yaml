@@ -1,0 +1,7 @@
+# scitex-dev audit overrides for openalex-local.
+# Tracked via .gitignore exception (see local-state-directories skill leaf).
+audit:
+  root-whitelist:
+    files:
+      # Codecov configuration file lives at repo root by convention.
+      - codecov.yml
