@@ -6,12 +6,19 @@ from pathlib import Path
 EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "08_cli_demo.sh"
 
 
-def test_example_exists():
-    assert EXAMPLE.is_file(), f"missing example: {EXAMPLE}"
-    assert EXAMPLE.read_text().lstrip().startswith("#"), (
-        "expected shell shebang/comment"
-    )
+def test_cli_demo_script_file_exists():
+    # Arrange
+    path = EXAMPLE
+    # Act
+    found = path.is_file()
+    # Assert
+    assert found, f"missing example: {path}"
 
 
-if __name__ == "__main__":
-    test_example_exists()
+def test_cli_demo_script_starts_with_comment_or_shebang():
+    # Arrange
+    contents = EXAMPLE.read_text()
+    # Act
+    first_char = contents.lstrip()[:1]
+    # Assert
+    assert first_char == "#", "expected shell shebang/comment"
