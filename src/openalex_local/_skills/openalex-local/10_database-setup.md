@@ -71,7 +71,8 @@ openalex-local auto-discovers databases at these paths (in order):
 1. `$OPENALEX_LOCAL_DB` (environment variable)
 2. `./data/openalex.db` (project directory; CWD-relative)
 3. `<repo-root>/data/openalex.db` (repo-anchored; works regardless of CWD)
-4. `~/.openalex_local/openalex.db` (home directory)
+4. `~/.scitex/openalex-local/runtime/openalex.db` (canonical scitex runtime)
+5. `~/.openalex_local/openalex.db` (legacy, will be removed)
 
 ## Environment Variables
 

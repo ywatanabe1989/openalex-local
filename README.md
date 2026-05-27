@@ -359,10 +359,11 @@ pip install openalex-local[mcp]         # + MCP server
 <br>
 
 ```python
-from openalex_local import openalex_search, get_work
+from openalex_local import search, get, enrich_ids
 
-results = openalex_search("neural oscillations", limit=10)
-work = get_work("W2741809807")
+results = search("neural oscillations", limit=10)
+work = get("W2741809807")
+enriched = enrich_ids(["W2741809807", "W3000000000"])
 ```
 
 </details>
@@ -374,7 +375,7 @@ work = get_work("W2741809807")
 
 ```bash
 openalex-local search "query"
-openalex-local work W2741809807
+openalex-local search-by-doi 10.1038/nature12373
 ```
 
 </details>

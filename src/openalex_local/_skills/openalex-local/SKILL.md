@@ -3,7 +3,7 @@ name: openalex-local
 description: |
   [WHAT] Offline, zero-API-key search over the full OpenAlex academic corpus.
   [WHEN] Use when the user asks to "search papers", "find literature on X", "look up a DOI", "get metadata for this paper", "enrich these OpenAlex IDs", "batch-resolve DOIs to BibTeX", "search by title/abstract/author".
-  [HOW] `import openalex_local` then call `pyalex.Works().search(...)`.
+  [HOW] `import openalex_local` then call `openalex_local.search(...)`.
 tags: [openalex-local]
 allowed-tools: mcp__scitex__openalex_*
 primary_interface: python
