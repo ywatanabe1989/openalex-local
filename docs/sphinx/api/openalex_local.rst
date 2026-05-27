@@ -1,10 +1,11 @@
 openalex_local API
 ==================
 
-.. automodule:: openalex_local
-   :members:
-   :undoc-members:
-   :show-inheritance:
+The ``openalex_local`` package exposes a small set of functions
+(``search``, ``get``, ``count``, ``info``, ``configure``,
+``get_mode``) and the ``Work`` / ``SearchResult`` dataclasses, plus
+the ``Config`` singleton from ``openalex_local._core.config``. Each
+is documented below.
 
 Core Functions
 --------------
@@ -37,11 +38,6 @@ configure
 
 .. autofunction:: openalex_local.configure
 
-configure_http
-^^^^^^^^^^^^^^
-
-.. autofunction:: openalex_local.configure_http
-
 get_mode
 ^^^^^^^^
 
@@ -69,7 +65,7 @@ SearchResult
 Config
 ^^^^^^
 
-.. autoclass:: openalex_local.Config
+.. autoclass:: openalex_local._core.config.Config
    :members:
    :undoc-members:
    :show-inheritance:
