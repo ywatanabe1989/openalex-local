@@ -5,16 +5,21 @@ import re
 from pathlib import Path
 from typing import Optional
 
-# Default cache directory
-DEFAULT_CACHE_DIR = Path.home() / ".openalex_local" / "caches"
+from .._core.paths import get_cache_dir as _get_scitex_cache_dir
 
 
 def get_cache_dir() -> Path:
-    """Get cache directory from environment or default."""
+    """Get cache directory from environment or default.
+
+    Respects ``$OPENALEX_LOCAL_CACHE_DIR`` (env override); falls back to
+    the canonical scitex layout: ``~/.scitex/openalex-local/runtime/cache/``
+    (or ``$SCITEX_DIR/openalex-local/runtime/cache/`` when ``$SCITEX_DIR`` is
+    set).
+    """
     env_dir = os.environ.get("OPENALEX_LOCAL_CACHE_DIR")
     if env_dir:
         return Path(env_dir)
-    return DEFAULT_CACHE_DIR
+    return _get_scitex_cache_dir()
 
 
 def sanitize_cache_name(name: str) -> str:

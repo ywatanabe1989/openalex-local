@@ -14,8 +14,12 @@ from typing import Optional as _Optional
 
 __all__ = ["create", "get", "list_jobs", "run"]
 
-# Default jobs directory
-_JOBS_DIR = _Path.home() / ".openalex_local" / "jobs"
+
+def _get_default_jobs_dir() -> _Path:
+    """Return the canonical jobs directory under the scitex layout."""
+    from ._core.paths import get_jobs_dir as _scitex_jobs_dir
+
+    return _scitex_jobs_dir()
 
 
 @_dataclass
@@ -65,7 +69,7 @@ class _JobQueue:
     """Manages job persistence and execution (internal)."""
 
     def __init__(self, jobs_dir: _Optional[_Path] = None):
-        self.jobs_dir = _Path(jobs_dir) if jobs_dir else _JOBS_DIR
+        self.jobs_dir = _Path(jobs_dir) if jobs_dir else _get_default_jobs_dir()
         self.jobs_dir.mkdir(parents=True, exist_ok=True)
 
     def _job_path(self, job_id: str) -> _Path:
