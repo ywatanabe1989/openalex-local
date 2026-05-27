@@ -1,0 +1,333 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickstart &mdash; OpenAlex Local v0.4.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=6c02275b"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CLI Reference" href="cli_reference.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OpenAlex Local
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-from-pypi">Install from PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-from-source">Install from Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#database-setup">Database Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#http-mode-no-local-database">HTTP Mode (No Local Database)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#verify-installation">Verify Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#python-api">Python API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic-search">Basic Search</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-by-id-or-doi">Get by ID or DOI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#work-attributes">Work Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cli-usage">CLI Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mcp-integration">MCP Integration</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cli_reference.html">CLI Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference.html#main-commands">Main Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#openalex-local">openalex-local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#search">search</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#search-by-doi">search-by-doi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#relay">relay</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference.html#mcp-commands">MCP Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#mcp-start">mcp start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#mcp-doctor">mcp doctor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#mcp-installation">mcp installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#mcp-list-tools">mcp list-tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="http_api.html">HTTP API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#starting-the-server">Starting the Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#endpoints">Endpoints</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#root">Root</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#health-check">Health Check</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#database-info">Database Info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#search-works">Search Works</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#get-work-by-id">Get Work by ID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#batch-lookup">Batch Lookup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#fts5-query-syntax">FTS5 Query Syntax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#python-client">Python Client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/openalex_local.html">openalex_local API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/openalex_local.html#core-functions">Core Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#search">search</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.search"><code class="docutils literal notranslate"><span class="pre">search()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#get">get</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.get"><code class="docutils literal notranslate"><span class="pre">get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#count">count</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.count"><code class="docutils literal notranslate"><span class="pre">count()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#info">info</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.info"><code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/openalex_local.html#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#configure">configure</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.configure"><code class="docutils literal notranslate"><span class="pre">configure()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#get-mode">get_mode</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.get_mode"><code class="docutils literal notranslate"><span class="pre">get_mode()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/openalex_local.html#data-classes">Data Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#work">Work</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.Work"><code class="docutils literal notranslate"><span class="pre">Work</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#searchresult">SearchResult</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.SearchResult"><code class="docutils literal notranslate"><span class="pre">SearchResult</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#config">Config</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local._core.config.Config"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OpenAlex Local</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quickstart</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ywatanabe1989/openalex-local/blob/main/docs/sphinx/quickstart.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
+<section id="python-api">
+<h2>Python API<a class="headerlink" href="#python-api" title="Link to this heading"></a></h2>
+<section id="basic-search">
+<h3>Basic Search<a class="headerlink" href="#basic-search" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">openalex_local</span><span class="w"> </span><span class="kn">import</span> <span class="n">search</span><span class="p">,</span> <span class="n">get</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">info</span>
+
+<span class="c1"># Check database status</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">info</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Works: </span><span class="si">{</span><span class="n">db</span><span class="p">[</span><span class="s1">&#39;work_count&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Full-text search</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">search</span><span class="p">(</span><span class="s2">&quot;machine learning&quot;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">total</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> matches in </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">elapsed_ms</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">work</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">work</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">work</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="get-by-id-or-doi">
+<h3>Get by ID or DOI<a class="headerlink" href="#get-by-id-or-doi" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># By OpenAlex ID</span>
+<span class="n">work</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;W2741809807&quot;</span><span class="p">)</span>
+
+<span class="c1"># By DOI</span>
+<span class="n">work</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;10.1038/nature12373&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">work</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Title: </span><span class="si">{</span><span class="n">work</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Authors: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">work</span><span class="o">.</span><span class="n">authors</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Abstract: </span><span class="si">{</span><span class="n">work</span><span class="o">.</span><span class="n">abstract</span><span class="p">[:</span><span class="mi">200</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Concepts: </span><span class="si">{</span><span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">work</span><span class="o">.</span><span class="n">concepts</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="work-attributes">
+<h3>Work Attributes<a class="headerlink" href="#work-attributes" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">Work</span></code> object has these attributes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">openalex_id</span></code> - OpenAlex ID (e.g., W2741809807)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">doi</span></code> - Digital Object Identifier</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">title</span></code> - Work title</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">abstract</span></code> - Abstract text</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">authors</span></code> - List of author names</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">year</span></code> - Publication year</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> - Journal/venue name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cited_by_count</span></code> - Number of citations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">concepts</span></code> - OpenAlex concepts with scores</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">topics</span></code> - OpenAlex topics</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_oa</span></code> - Open access status</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">oa_url</span></code> - Open access URL</p></li>
+</ul>
+</section>
+<section id="configuration">
+<h3>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">openalex_local</span><span class="w"> </span><span class="kn">import</span> <span class="n">configure</span><span class="p">,</span> <span class="n">configure_http</span><span class="p">,</span> <span class="n">get_mode</span>
+
+<span class="c1"># Configure database path</span>
+<span class="n">configure</span><span class="p">(</span><span class="s2">&quot;/path/to/openalex.db&quot;</span><span class="p">)</span>
+
+<span class="c1"># Configure HTTP mode</span>
+<span class="n">configure_http</span><span class="p">(</span><span class="s2">&quot;http://localhost:31292&quot;</span><span class="p">)</span>
+
+<span class="c1"># Check current mode</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">get_mode</span><span class="p">())</span>  <span class="c1"># &quot;db&quot; or &quot;http&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="cli-usage">
+<h2>CLI Usage<a class="headerlink" href="#cli-usage" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Search</span>
+openalex-local<span class="w"> </span>search<span class="w"> </span><span class="s2">&quot;CRISPR genome editing&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="m">5</span>
+
+<span class="c1"># Get by ID</span>
+openalex-local<span class="w"> </span>search-by-doi<span class="w"> </span>W2741809807
+openalex-local<span class="w"> </span>search-by-doi<span class="w"> </span><span class="m">10</span>.1038/nature12373
+
+<span class="c1"># Show abstracts</span>
+openalex-local<span class="w"> </span>search<span class="w"> </span><span class="s2">&quot;neural networks&quot;</span><span class="w"> </span>-a
+
+<span class="c1"># JSON output</span>
+openalex-local<span class="w"> </span>search<span class="w"> </span><span class="s2">&quot;machine learning&quot;</span><span class="w"> </span>--json
+
+<span class="c1"># Status</span>
+openalex-local<span class="w"> </span>status
+</pre></div>
+</div>
+</section>
+<section id="mcp-integration">
+<h2>MCP Integration<a class="headerlink" href="#mcp-integration" title="Link to this heading"></a></h2>
+<p>For Claude Desktop or other MCP clients:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;openalex-local&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;command&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;openalex-local&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;mcp&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;start&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;env&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;OPENALEX_LOCAL_DB&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/openalex.db&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Available MCP tools:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">search</span></code> - Full-text search</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">search_by_id</span></code> - Get work by ID or DOI</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> - Database statistics</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">enrich_ids</span></code> - Batch lookup</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cli_reference.html" class="btn btn-neutral float-right" title="CLI Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yusuke Watanabe.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

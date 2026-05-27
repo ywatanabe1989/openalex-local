@@ -17,8 +17,55 @@
 [![PyPI version](https://badge.fury.io/py/openalex-local.svg)](https://badge.fury.io/py/openalex-local)
 [![Documentation](https://readthedocs.org/projects/openalex-local/badge/?version=latest)](https://openalex-local.readthedocs.io/en/latest/)
 [![Tests](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/openalex-local/actions/workflows/test.yml)
+[![coverage](https://img.shields.io/codecov/c/github/ywatanabe1989/openalex-local)](https://codecov.io/gh/ywatanabe1989/openalex-local)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+
+## Demo
+
+<p align="center">
+  <img src="docs/scitex_if_validation.png" alt="OpenAlex Local IF Validation" width="600"/>
+</p>
+
+```bash
+# Search 284M papers locally — abstracts + semantic indices
+openalex-local search "graph neural networks for protein folding"
+
+# Resolve a DOI to full record (title, abstract, citations, IF)
+openalex-local search-by-doi 10.1038/s41586-021-03819-2
+
+# Drive from MCP / Claude Code
+openalex-local mcp serve
+```
+
+The chart above is OpenAlex-derived impact factors validated against
+JCR 2024 (r = 0.96, n = 17,042 journals).
+
+## Architecture
+
+```
+┌──────────────────────────┐
+│ OpenAlex public dump     │
+│ (~300 GB compressed)     │
+└──────────────┬───────────┘
+               │ snapshot import
+               ▼
+       ┌─────────────────────┐
+       │ openalex.db         │
+       │ (SQLite + FTS5)     │
+       │ + semantic embeds   │
+       └────────┬────────────┘
+                │
+                ▼
+   ┌──────────────────────────────────────┐
+   │ openalex-local — Python / CLI / MCP  │
+   │   search · search-by-doi · cache     │
+   │   if-validate · stats · relay        │
+   └──────────────────────────────────────┘
+```
+
+The DB lives entirely on disk; openalex-local is a thin facade over
+SQLite + FTS5 + an embedding index. No network calls during queries.
 
 <details>
 <summary><strong>Why OpenAlex Local?</strong></summary>
@@ -291,7 +338,66 @@ Updated monthly from their [snapshot](https://docs.openalex.org/download-all-dat
 
 </details>
 
-> **Interfaces:** Python ⭐⭐⭐ (primary) · CLI ⭐⭐ · MCP ⭐⭐ · Skills ⭐⭐ · Hook — · HTTP —
+## Installation
+
+> **Recommended**: `uv pip install openalex-local[all]` —
+> uv's Rust resolver handles the SciTeX dep set in 1-3 min where
+> pip's serial backtracker can take 30+ min on the full extras.
+> Plain `pip install` still works; the install block below shows both.
+
+
+```bash
+pip install openalex-local              # core
+pip install openalex-local[mcp]         # + MCP server
+```
+
+## 4 Interfaces
+
+<details open>
+<summary><strong>Python API</strong></summary>
+
+<br>
+
+```python
+from openalex_local import openalex_search, get_work
+
+results = openalex_search("neural oscillations", limit=10)
+work = get_work("W2741809807")
+```
+
+</details>
+
+<details>
+<summary><strong>CLI</strong></summary>
+
+<br>
+
+```bash
+openalex-local search "query"
+openalex-local work W2741809807
+```
+
+</details>
+
+<details>
+<summary><strong>MCP Server</strong></summary>
+
+<br>
+
+```bash
+openalex-local mcp start
+```
+
+</details>
+
+<details>
+<summary><strong>Skills</strong></summary>
+
+<br>
+
+Agent skill pages live under `src/openalex_local/_skills/openalex-local/`.
+
+</details>
 
 ## Problem and Solution
 
@@ -302,15 +408,15 @@ Updated monthly from their [snapshot](https://docs.openalex.org/download-all-dat
 
 ## Part of SciTeX
 
-OpenAlex Local is part of [**SciTeX**](https://scitex.ai). When used inside the SciTeX framework, literature search integrates with the scholar module:
+`openalex-local` is part of [**SciTeX**](https://scitex.ai). Install via
+the umbrella with `pip install scitex[scholar]` to use as
+`scitex.scholar` (Python) or `scitex scholar ...` (CLI) — `openalex-local`
+provides the local OpenAlex backing for `scholar`'s metadata enrichment.
 
 ```python
 import scitex
 
-# Search local OpenAlex database via SciTeX
 results = scitex.scholar.search("neural oscillations gamma band")
-
-# Enrich BibTeX with OpenAlex metadata
 scitex.scholar.enrich_bibtex("references.bib")
 ```
 

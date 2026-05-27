@@ -1,0 +1,474 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Index &mdash; OpenAlex Local v0.4.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=6c02275b"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            OpenAlex Local
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-from-pypi">Install from PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#install-from-source">Install from Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#database-setup">Database Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#http-mode-no-local-database">HTTP Mode (No Local Database)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#verify-installation">Verify Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#python-api">Python API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#basic-search">Basic Search</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#get-by-id-or-doi">Get by ID or DOI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#work-attributes">Work Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="quickstart.html#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#cli-usage">CLI Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#mcp-integration">MCP Integration</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cli_reference.html">CLI Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference.html#main-commands">Main Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#openalex-local">openalex-local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#search">search</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#search-by-doi">search-by-doi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#relay">relay</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference.html#mcp-commands">MCP Commands</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#mcp-start">mcp start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#mcp-doctor">mcp doctor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#mcp-installation">mcp installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli_reference.html#mcp-list-tools">mcp list-tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="http_api.html">HTTP API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#starting-the-server">Starting the Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#endpoints">Endpoints</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#root">Root</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#health-check">Health Check</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#database-info">Database Info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#search-works">Search Works</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#get-work-by-id">Get Work by ID</a></li>
+<li class="toctree-l3"><a class="reference internal" href="http_api.html#batch-lookup">Batch Lookup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#fts5-query-syntax">FTS5 Query Syntax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#python-client">Python Client</a></li>
+<li class="toctree-l2"><a class="reference internal" href="http_api.html#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/openalex_local.html">openalex_local API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/openalex_local.html#core-functions">Core Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#search">search</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.search"><code class="docutils literal notranslate"><span class="pre">search()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#get">get</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.get"><code class="docutils literal notranslate"><span class="pre">get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#count">count</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.count"><code class="docutils literal notranslate"><span class="pre">count()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#info">info</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.info"><code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/openalex_local.html#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#configure">configure</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.configure"><code class="docutils literal notranslate"><span class="pre">configure()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#get-mode">get_mode</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.get_mode"><code class="docutils literal notranslate"><span class="pre">get_mode()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api/openalex_local.html#data-classes">Data Classes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#work">Work</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.Work"><code class="docutils literal notranslate"><span class="pre">Work</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#searchresult">SearchResult</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local.SearchResult"><code class="docutils literal notranslate"><span class="pre">SearchResult</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="api/openalex_local.html#config">Config</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/openalex_local.html#openalex_local._core.config.Config"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OpenAlex Local</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Index</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ywatanabe1989/openalex-local/blob/main/docs/sphinx/genindex" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#Q"><strong>Q</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ | <a href="#Y"><strong>Y</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.SearchResult.__init__">__init__() (openalex_local.SearchResult method)</a>
+
+      <ul>
+        <li><a href="api/openalex_local.html#openalex_local.Work.__init__">(openalex_local.Work method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work._citation_apa">_citation_apa() (openalex_local.Work method)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work._citation_bibtex">_citation_bibtex() (openalex_local.Work method)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work._format_author_apa">_format_author_apa() (openalex_local.Work method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.abstract">abstract (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.authors">authors (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.citation">citation() (openalex_local.Work method)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.cited_by_count">cited_by_count (openalex_local.Work attribute)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.concepts">concepts (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local._core.config.Config">Config (class in openalex_local._core.config)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.configure">configure() (in module openalex_local)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.count">count() (in module openalex_local)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.doi">doi (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.SearchResult.elapsed_ms">elapsed_ms (openalex_local.SearchResult attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.from_db_row">from_db_row() (openalex_local.Work class method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.from_openalex">from_openalex() (openalex_local.Work class method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.get">get() (in module openalex_local)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local._core.config.Config.get_api_url">get_api_url() (openalex_local._core.config.Config class method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local._core.config.Config.get_db_path">get_db_path() (openalex_local._core.config.Config class method)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.get_mode">get_mode() (in module openalex_local)</a>
+
+      <ul>
+        <li><a href="api/openalex_local.html#openalex_local._core.config.Config.get_mode">(openalex_local._core.config.Config class method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.info">info() (in module openalex_local)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.is_oa">is_oa (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.issn">issn (openalex_local.Work attribute)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.issue">issue (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.oa_url">oa_url (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.openalex_id">openalex_id (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.pages">pages (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.publisher">publisher (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Q">Q</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.SearchResult.query">query (openalex_local.SearchResult attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.referenced_works">referenced_works (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local._core.config.Config.reset">reset() (openalex_local._core.config.Config class method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.SearchResult.save">save() (openalex_local.SearchResult method)</a>
+
+      <ul>
+        <li><a href="api/openalex_local.html#openalex_local.Work.save">(openalex_local.Work method)</a>
+</li>
+      </ul></li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.scitex_if">scitex_if (openalex_local.Work attribute)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.search">search() (in module openalex_local)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.SearchResult">SearchResult (class in openalex_local)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local._core.config.Config.set_api_url">set_api_url() (openalex_local._core.config.Config class method)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local._core.config.Config.set_db_path">set_db_path() (openalex_local._core.config.Config class method)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local._core.config.Config.set_mode">set_mode() (openalex_local._core.config.Config class method)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.source">source (openalex_local.Work attribute)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.source_cited_by_count">source_cited_by_count (openalex_local.Work attribute)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.source_h_index">source_h_index (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.title">title (openalex_local.Work attribute)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.to_dict">to_dict() (openalex_local.Work method)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.to_text">to_text() (openalex_local.Work method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.topics">topics (openalex_local.Work attribute)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.SearchResult.total">total (openalex_local.SearchResult attribute)</a>
+</li>
+      <li><a href="api/openalex_local.html#openalex_local.Work.type">type (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.volume">volume (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work">Work (class in openalex_local)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.SearchResult.works">works (openalex_local.SearchResult attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="Y">Y</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/openalex_local.html#openalex_local.Work.year">year (openalex_local.Work attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yusuke Watanabe.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

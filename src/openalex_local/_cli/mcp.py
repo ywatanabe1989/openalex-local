@@ -10,7 +10,19 @@ from .. import info
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
+class _MCPAliasedGroup(click.Group):
+    """MCP group with backward-compatible aliases."""
+
+    ALIASES = {
+        "installation": "show-installation",
+    }
+
+    def get_command(self, ctx, cmd_name):
+        cmd_name = self.ALIASES.get(cmd_name, cmd_name)
+        return super().get_command(ctx, cmd_name)
+
+
+@click.group(cls=_MCPAliasedGroup, context_settings=CONTEXT_SETTINGS)
 def mcp():
     """MCP (Model Context Protocol) server commands.
 
@@ -18,7 +30,7 @@ def mcp():
     Commands:
       start        - Start the MCP server
       doctor       - Diagnose MCP setup
-      installation - Show installation instructions
+      show-installation - Show installation instructions
       list-tools   - List available MCP tools
     """
     pass
@@ -50,7 +62,17 @@ def mcp():
     is_flag=True,
     help="Kill existing process using the port if any (http/sse only)",
 )
-def mcp_start(transport: str, host: str, port: int, force: bool):
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what server would start without actually starting it.",
+)
+@click.option(
+    "-y", "--yes", is_flag=True, help="Skip confirmation prompts (assume yes)."
+)
+def mcp_start(
+    transport: str, host: str, port: int, force: bool, dry_run: bool, yes: bool
+):
     """Start the MCP server.
 
     \b
@@ -83,13 +105,30 @@ def mcp_start(transport: str, host: str, port: int, force: bool):
           }
         }
       }
+
+    \b
+    Example:
+      $ openalex-local mcp start
+      $ openalex-local mcp start -t http --host 0.0.0.0 --port 8083
+      $ openalex-local mcp start --dry-run
     """
+    if dry_run:
+        click.secho(
+            f"[dry-run] would start MCP server (transport={transport}, host={host}, port={port}, force={force})",
+            fg="yellow",
+        )
+        return
     run_mcp_server(transport, host, port, force)
 
 
 @mcp.command("doctor", context_settings=CONTEXT_SETTINGS)
 def mcp_doctor():
-    """Diagnose MCP server setup and dependencies."""
+    """Diagnose MCP server setup and dependencies.
+
+    \b
+    Example:
+      $ openalex-local mcp doctor
+    """
     click.echo("MCP Server Diagnostics")
     click.echo("=" * 50)
     click.echo()
@@ -128,9 +167,41 @@ def mcp_doctor():
     click.echo("  openalex-local mcp start -t http      # HTTP transport")
 
 
-@mcp.command("installation", context_settings=CONTEXT_SETTINGS)
-def mcp_installation():
-    """Show MCP client installation instructions."""
+@mcp.command("show-installation", context_settings=CONTEXT_SETTINGS)
+@click.option("--json", "as_json", is_flag=True, help="Output config as JSON")
+def mcp_installation(as_json: bool):
+    """Show MCP client installation instructions.
+
+    \b
+    Example:
+      $ openalex-local mcp show-installation
+      $ openalex-local mcp show-installation --json
+    """
+    if as_json:
+        import json as _json
+
+        config = {
+            "local_stdio": {
+                "mcpServers": {
+                    "openalex-local": {
+                        "command": "openalex-local",
+                        "args": ["mcp", "start"],
+                        "env": {"OPENALEX_LOCAL_DB": "/path/to/openalex.db"},
+                    }
+                }
+            },
+            "remote_http": {
+                "server_command": "openalex-local mcp start -t http --host 0.0.0.0 --port 8083",
+                "client_config": {
+                    "mcpServers": {
+                        "openalex-remote": {"url": "http://your-server:8083/mcp"}
+                    }
+                },
+            },
+        }
+        click.echo(_json.dumps(config, indent=2))
+        return
+
     click.echo("MCP Client Configuration")
     click.echo("=" * 50)
     click.echo()
@@ -180,6 +251,12 @@ def mcp_list_tools(verbose: int, compact: bool, as_json: bool):
       -v      - Signatures
       -vv     - Signatures + one-line description
       -vvv    - Signatures + full description
+
+    \b
+    Example:
+      $ openalex-local mcp list-tools
+      $ openalex-local mcp list-tools -vv
+      $ openalex-local mcp list-tools --json
     """
     try:
         from .mcp_server import mcp as mcp_server

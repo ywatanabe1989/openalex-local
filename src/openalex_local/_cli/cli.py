@@ -15,7 +15,8 @@ class AliasedGroup(click.Group):
     ALIASES = {
         "s": "search",
         "doi": "search-by-doi",
-        "st": "status",
+        "st": "show-status",
+        "status": "show-status",
     }
 
     def get_command(self, ctx, cmd_name):
@@ -56,9 +57,16 @@ def _print_recursive_help(ctx, param, value):
 
 
 @click.group(cls=AliasedGroup, context_settings={"help_option_names": ["-h", "--help"]})
-@click.version_option(__version__, "--version")
+@click.help_option("-h", "--help")
+@click.version_option(__version__, "-V", "--version")
 @click.option("--http", is_flag=True, help="Use HTTP API instead of direct database")
 @click.option("--api-url", help="API URL for http mode (default: auto-detect)")
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    help="Emit machine-readable JSON output (where supported).",
+)
 @click.option(
     "--help-recursive",
     is_flag=True,
@@ -68,7 +76,7 @@ def _print_recursive_help(ctx, param, value):
     help="Show help for all commands recursively.",
 )
 @click.pass_context
-def cli(ctx, http, api_url):
+def cli(ctx, http, api_url, as_json):
     """
     Local OpenAlex database with 284M+ works and full-text search.
 
@@ -82,8 +90,17 @@ def cli(ctx, http, api_url):
     \b
     HTTP mode (connect to API server):
       openalex-local --http search "machine learning"
+
+    \b
+    Configuration precedence (highest -> lowest):
+      1. CLI flags / function kwargs
+      2. ./config.yaml (project-local)
+      3. $OPENALEX_LOCAL_CONFIG (env var pointing to a YAML file)
+      4. ~/.scitex/openalex-local/config.yaml (user-level)
+      5. built-in defaults
     """
     ctx.ensure_object(dict)
+    ctx.obj["as_json"] = as_json
 
     if http or api_url:
         from .._core.api import configure_http
@@ -122,7 +139,14 @@ def search_cmd(
     save_path,
     save_format,
 ):
-    """Search for works by title, abstract, or authors."""
+    """Search for works by title, abstract, or authors.
+
+    \b
+    Example:
+      $ openalex-local search "machine learning" -n 5
+      $ openalex-local search "CRISPR" --json
+      $ openalex-local search "deep learning" --abstracts --authors
+    """
     from .. import search
     from .._core.db import get_db
 
@@ -136,9 +160,11 @@ def search_cmd(
         click.secho(
             "\nHint: Make sure the relay server is running:", fg="yellow", err=True
         )
-        click.secho("  1. On NAS: openalex-local relay", fg="yellow", err=True)
+        click.secho("  1. On the db-host: openalex-local relay", fg="yellow", err=True)
         click.secho(
-            "  2. SSH tunnel: ssh -L 31292:127.0.0.1:31292 nas", fg="yellow", err=True
+            "  2. SSH tunnel: ssh -L 31292:127.0.0.1:31292 <db-host>",
+            fg="yellow",
+            err=True,
         )
         sys.exit(1)
     except Exception as e:
@@ -248,7 +274,14 @@ def search_cmd(
     help="Output format for --save (default: json)",
 )
 def search_by_doi_cmd(doi, as_json, citation, bibtex, save_path, save_format):
-    """Search for a work by DOI."""
+    """Search for a work by DOI.
+
+    \b
+    Example:
+      $ openalex-local search-by-doi 10.1038/nature12373
+      $ openalex-local search-by-doi 10.1038/nature12373 --json
+      $ openalex-local search-by-doi 10.1038/nature12373 --bibtex
+    """
     from .. import get
 
     try:
@@ -388,13 +421,34 @@ def relay(host: str, port: int, force: bool):
     help="Output format (auto from extension)",
 )
 @click.option("--limit", type=int, default=0, help="Limit rows (0=all)")
-def export_if(output, fmt, limit):
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would be exported without writing the file.",
+)
+@click.option(
+    "-y", "--yes", is_flag=True, help="Skip confirmation prompts (assume yes)."
+)
+def export_if(output, fmt, limit, dry_run, yes):
     """Export SciTeX Impact Factors (OpenAlex) to CSV or JSON.
 
     Exports precomputed journal impact factors from the database.
     Note: These are SciTeX IF values calculated from OpenAlex data,
     not JCR Impact Factors.
+
+    \b
+    Example:
+      $ openalex-local export-if -o scitex_if.csv
+      $ openalex-local export-if -o scitex_if.json --format json
+      $ openalex-local export-if --limit 1000 --dry-run
     """
+    if dry_run:
+        click.secho(
+            f"[dry-run] would export SciTeX IFs to {output} (format={fmt or 'auto'}, limit={limit or 'all'})",
+            fg="yellow",
+        )
+        return
+
     from .._core.db import get_db
 
     db = get_db()
@@ -453,6 +507,15 @@ except ImportError:
     pass
 
 
+# Wire canonical install-shell-completion + print-shell-completion (§1a)
+try:
+    from scitex_dev._cli._completion import attach_shell_completion
+
+    attach_shell_completion(cli, prog_name="openalex-local")
+except ImportError:
+    pass
+
+
 @cli.command("list-python-apis")
 @click.option(
     "-v", "--verbose", count=True, help="Verbosity: -v sig, -vv +doc, -vvv full"
@@ -460,7 +523,14 @@ except ImportError:
 @click.option("-d", "--max-depth", type=int, default=5, help="Max recursion depth")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON")
 def list_python_apis(verbose, max_depth, as_json):
-    """List Python APIs (alias for: scitex introspect api openalex_local)."""
+    """List Python APIs (alias for: scitex introspect api openalex_local).
+
+    \b
+    Example:
+      $ openalex-local list-python-apis
+      $ openalex-local list-python-apis -v
+      $ openalex-local list-python-apis --json
+    """
     try:
         from scitex.cli.introspect import api
 
@@ -483,6 +553,18 @@ def list_python_apis(verbose, max_depth, as_json):
 def main():
     """Entry point for CLI."""
     cli()
+
+
+# audit §4 — inject version into root --help. `main` is a thin
+# wrapper; the click Group is `cli`.
+try:
+    from importlib.metadata import version as _v
+
+    cli.help = (
+        f"openalex-local (v{_v('openalex-local')}) — " + (cli.help or "").lstrip()
+    )
+except Exception:
+    pass
 
 
 if __name__ == "__main__":

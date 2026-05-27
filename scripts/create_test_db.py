@@ -22,8 +22,8 @@ from urllib.parse import quote
 # Paths
 SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
-TEST_DB_PATH = PROJECT_ROOT / "tests" / "fixtures" / "test_openalex.db"
-SAMPLE_JSON_PATH = PROJECT_ROOT / "tests" / "fixtures" / "sample_works.json"
+TEST_DB_PATH = PROJECT_ROOT / "tests" / "openalex_local" / "fixtures" / "test_openalex.db"
+SAMPLE_JSON_PATH = PROJECT_ROOT / "tests" / "openalex_local" / "fixtures" / "sample_works.json"
 
 # OpenAlex API
 OPENALEX_API = "https://api.openalex.org/works"
