@@ -79,6 +79,12 @@ openalex_local = ["_skills/**/*.md"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+markers = [
+    "unit: Unit tests (fast, no external dependencies)",
+    "integration: Integration tests (require database or external services)",
+    "smoke: Smoke tests (quick sanity checks)",
+    "e2e: End-to-end tests (full workflow)",
+]
 
 [tool.coverage.run]
 parallel = true
