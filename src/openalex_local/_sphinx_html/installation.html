@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; OpenAlex Local v0.4.0</title>
+  <title>Installation &mdash; OpenAlex Local v0.7.6</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=6c02275b"></script>
+      <script src="_static/documentation_options.js?v=918ced64"></script>
       <script src="_static/doctools.js?v=9a2dae69"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -226,9 +226,10 @@ pip<span class="w"> </span>install<span class="w"> </span>openalex-local<span cl
 <p><strong>Option 2: Default Locations</strong></p>
 <p>The package searches these locations automatically:</p>
 <ol class="arabic simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">./openalex.db</span></code> (current directory)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">~/openalex.db</span></code> (home directory)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">~/.openalex/openalex.db</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">./data/openalex.db</span></code> (current project directory)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;repo-root&gt;/data/openalex.db</span></code> (repo-anchored)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">~/.scitex/openalex-local/runtime/openalex.db</span></code> (canonical scitex runtime)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">~/.openalex_local/openalex.db</span></code> (legacy)</p></li>
 </ol>
 <p><strong>Option 3: Build from Scratch</strong></p>
 <p>Building the full database requires ~300 GB disk space:</p>

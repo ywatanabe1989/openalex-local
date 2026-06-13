@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>openalex_local._core.config &mdash; OpenAlex Local v0.4.0</title>
+  <title>openalex_local._core.config &mdash; OpenAlex Local v0.7.6</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -13,7 +13,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=6c02275b"></script>
+      <script src="../../../_static/documentation_options.js?v=918ced64"></script>
       <script src="../../../_static/doctools.js?v=9a2dae69"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -201,7 +201,9 @@
     <span class="c1"># invokes openalex-local from `~/proj/scitex-dev/`). Anchored on</span>
     <span class="c1"># this source file: &lt;repo&gt;/src/openalex_local/_core/config.py.</span>
     <span class="n">_Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;openalex.db&quot;</span><span class="p">,</span>
-    <span class="c1"># User-state cache directory.</span>
+    <span class="c1"># Canonical scitex runtime location.</span>
+    <span class="n">_Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.scitex&quot;</span> <span class="o">/</span> <span class="s2">&quot;openalex-local&quot;</span> <span class="o">/</span> <span class="s2">&quot;runtime&quot;</span> <span class="o">/</span> <span class="s2">&quot;openalex.db&quot;</span><span class="p">,</span>
+    <span class="c1"># Legacy user-state cache directory (back-compat, will be removed).</span>
     <span class="n">_Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.openalex_local&quot;</span> <span class="o">/</span> <span class="s2">&quot;openalex.db&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
