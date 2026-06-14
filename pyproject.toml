@@ -64,6 +64,9 @@ openalex-local = "openalex_local"
 [project.entry-points."scitex_dev.skills"]
 openalex-local = "openalex_local"
 
+[project.entry-points."scitex_dev.jobs"]
+openalex-incremental-update = "openalex_local._jobs_provider:get_jobs"
+
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/openalex-local"
 Documentation = "https://openalex-local.readthedocs.io"
