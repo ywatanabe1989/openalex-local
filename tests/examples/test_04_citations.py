@@ -7,9 +7,21 @@ from pathlib import Path
 EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "04_citations.py"
 
 
-def test_exists():
-    assert EXAMPLE.exists(), f"missing example: {EXAMPLE}"
+def test_example_script_file_exists():
+    """Test the example script is present on disk."""
+    # Arrange
+    path = EXAMPLE
+    # Act
+    present = path.exists()
+    # Assert
+    assert present, f"missing example: {path}"
 
 
-def test_compiles():
-    subprocess.run([sys.executable, "-m", "py_compile", str(EXAMPLE)], check=True)
+def test_example_script_compiles_cleanly():
+    """Test the example script compiles without a syntax error."""
+    # Arrange
+    cmd = [sys.executable, "-m", "py_compile", str(EXAMPLE)]
+    # Act
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    # Assert
+    assert result.returncode == 0, result.stderr

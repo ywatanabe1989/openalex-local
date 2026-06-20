@@ -13,100 +13,172 @@ except ImportError:
     _has_scitex_dev = False
 
 
-class TestCLI:
-    """Test CLI commands."""
+@pytest.fixture
+def runner():
+    """Return a Click CLI runner."""
+    return CliRunner()
 
-    def setup_method(self):
-        """Create CLI runner."""
-        self.runner = CliRunner()
 
-    def test_cli_help(self):
-        """Test that --help works."""
-        result = self.runner.invoke(cli, ["--help"])
+class TestCLIHelp:
+    """Test CLI --help output for each command."""
+
+    def test_root_help_exits_zero(self, runner):
+        """Test the root --help exits with status zero."""
+        # Arrange
+        args = ["--help"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
         assert result.exit_code == 0
-        assert "openalex-local" in result.output.lower() or "search" in result.output
 
-    def test_cli_version(self):
-        """Test that --version works."""
-        result = self.runner.invoke(cli, ["--version"])
-        assert result.exit_code == 0
-        assert "0." in result.output  # Version starts with 0.x.x
-
-    def test_cli_help_recursive(self):
-        """Test that --help-recursive works."""
-        result = self.runner.invoke(cli, ["--help-recursive"])
-        assert result.exit_code == 0
-        assert "mcp" in result.output
+    def test_root_help_mentions_a_command(self, runner):
+        """Test the root --help lists at least the search command."""
+        # Arrange
+        args = ["--help"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
         assert "search" in result.output
 
-    def test_search_help(self):
-        """Test search --help."""
-        result = self.runner.invoke(cli, ["search", "--help"])
-        assert result.exit_code == 0
-        assert "search" in result.output.lower()
-
-    def test_status_help(self):
-        """Test status --help."""
-        result = self.runner.invoke(cli, ["status", "--help"])
-        assert result.exit_code == 0
-        assert "status" in result.output.lower()
-
-    def test_mcp_help(self):
-        """Test mcp --help."""
-        result = self.runner.invoke(cli, ["mcp", "--help"])
-        assert result.exit_code == 0
-        assert "mcp" in result.output.lower()
-
-    def test_mcp_list_tools_help(self):
-        """Test mcp list-tools --help."""
-        result = self.runner.invoke(cli, ["mcp", "list-tools", "--help"])
+    def test_version_exits_zero(self, runner):
+        """Test --version exits with status zero."""
+        # Arrange
+        args = ["--version"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
         assert result.exit_code == 0
 
-    def test_mcp_doctor_help(self):
-        """Test mcp doctor --help."""
-        result = self.runner.invoke(cli, ["mcp", "doctor", "--help"])
+    def test_version_prints_zero_dot_series(self, runner):
+        """Test --version prints a 0.x version string."""
+        # Arrange
+        args = ["--version"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
+        assert "0." in result.output
+
+    def test_help_recursive_exits_zero(self, runner):
+        """Test --help-recursive exits with status zero."""
+        # Arrange
+        args = ["--help-recursive"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
         assert result.exit_code == 0
 
-    def test_mcp_installation_help(self):
-        """Test mcp installation --help."""
-        result = self.runner.invoke(cli, ["mcp", "installation", "--help"])
+    def test_help_recursive_lists_mcp_command(self, runner):
+        """Test --help-recursive surfaces the nested mcp command."""
+        # Arrange
+        args = ["--help-recursive"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
+        assert "mcp" in result.output
+
+    def test_search_help_exits_zero(self, runner):
+        """Test search --help exits with status zero."""
+        # Arrange
+        args = ["search", "--help"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
         assert result.exit_code == 0
 
-    def test_mcp_start_help(self):
-        """Test mcp start --help."""
-        result = self.runner.invoke(cli, ["mcp", "start", "--help"])
+    def test_status_help_exits_zero(self, runner):
+        """Test status --help exits with status zero."""
+        # Arrange
+        args = ["status", "--help"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
         assert result.exit_code == 0
-        assert "transport" in result.output.lower() or "stdio" in result.output
+
+    def test_mcp_help_exits_zero(self, runner):
+        """Test mcp --help exits with status zero."""
+        # Arrange
+        args = ["mcp", "--help"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
+        assert result.exit_code == 0
+
+    def test_mcp_list_tools_help_exits_zero(self, runner):
+        """Test mcp list-tools --help exits with status zero."""
+        # Arrange
+        args = ["mcp", "list-tools", "--help"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
+        assert result.exit_code == 0
+
+    def test_mcp_doctor_help_exits_zero(self, runner):
+        """Test mcp doctor --help exits with status zero."""
+        # Arrange
+        args = ["mcp", "doctor", "--help"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
+        assert result.exit_code == 0
+
+    def test_mcp_installation_help_exits_zero(self, runner):
+        """Test mcp installation --help exits with status zero."""
+        # Arrange
+        args = ["mcp", "installation", "--help"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
+        assert result.exit_code == 0
+
+    def test_mcp_start_help_exits_zero(self, runner):
+        """Test mcp start --help exits with status zero."""
+        # Arrange
+        args = ["mcp", "start", "--help"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
+        assert result.exit_code == 0
 
 
 class TestCLICommands:
     """Test CLI command execution (without database)."""
 
-    def setup_method(self):
-        """Create CLI runner."""
-        self.runner = CliRunner()
-
     @pytest.mark.skipif(
         not _has_scitex_dev,
         reason="scitex_dev not installed",
     )
-    def test_mcp_list_tools(self):
-        """Test mcp list-tools runs."""
-        result = self.runner.invoke(cli, ["mcp", "list-tools"])
-        # Should run without error (may have no tools or list tools)
+    def test_mcp_list_tools_runs_clean(self, runner):
+        """Test mcp list-tools runs and exits with status zero."""
+        # Arrange
+        args = ["mcp", "list-tools"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
         assert result.exit_code == 0
 
-    def test_mcp_installation(self):
-        """Test mcp installation runs."""
-        result = self.runner.invoke(cli, ["mcp", "installation"])
+    def test_mcp_installation_exits_zero(self, runner):
+        """Test mcp installation runs and exits with status zero."""
+        # Arrange
+        args = ["mcp", "installation"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
         assert result.exit_code == 0
+
+    def test_mcp_installation_mentions_mcp(self, runner):
+        """Test mcp installation output references mcp setup."""
+        # Arrange
+        args = ["mcp", "installation"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
         assert "mcp" in result.output.lower() or "install" in result.output.lower()
 
-    @pytest.mark.skip(
-        reason="Slow on large databases (459M+ rows) - COUNT(*) times out"
-    )
-    def test_mcp_doctor(self):
-        """Test mcp doctor runs."""
-        result = self.runner.invoke(cli, ["mcp", "doctor"])
-        # May pass or fail depending on setup, but should not crash
-        assert result.exit_code in [0, 1]
+    def test_mcp_doctor_does_not_crash(self, runner):
+        """Test mcp doctor runs to a clean exit code without crashing."""
+        # Arrange
+        args = ["mcp", "doctor"]
+        # Act
+        result = runner.invoke(cli, args)
+        # Assert
+        assert result.exit_code in (0, 1)

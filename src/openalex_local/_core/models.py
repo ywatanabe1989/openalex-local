@@ -291,6 +291,8 @@ class Work:
     def _format_author_apa(self, name: str) -> str:
         """Format author name for APA (Last, F. M.)."""
         parts = name.split()
+        if not parts:
+            return ""
         if len(parts) == 1:
             return parts[0]
         last = parts[-1]

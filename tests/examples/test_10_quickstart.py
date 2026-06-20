@@ -14,21 +14,16 @@ import pytest
 EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "10_quickstart.ipynb"
 
 
-def test_exists():
-    assert EXAMPLE.exists(), f"missing example: {EXAMPLE}"
+@pytest.fixture
+def executable_notebook():
+    """Yield the notebook path once nbconvert and the DB are available.
 
-
-def test_compiles():
-    nb = json.loads(EXAMPLE.read_text(encoding="utf-8"))
-    assert nb.get("nbformat", 0) >= 4, f"unexpected nbformat: {nb.get('nbformat')!r}"
-
-
-def test_executes():
-    """Run the notebook end-to-end via nbconvert. Skip if jupyter or DB unavailable."""
+    Skips the requesting test when nbconvert/nbclient are missing or the
+    local OpenAlex DB is absent — the notebook demonstrates DB-backed
+    search and would error out otherwise.
+    """
     pytest.importorskip("nbconvert")
     pytest.importorskip("nbclient")
-    # Skip when the local OpenAlex DB isn't present — the notebook
-    # demonstrates DB-backed search and would error out otherwise.
     probe = subprocess.run(
         [
             sys.executable,
@@ -41,22 +36,45 @@ def test_executes():
     )
     if probe.returncode != 0 or probe.stdout.strip() != "1":
         pytest.skip("OpenAlex local DB not present; nbconvert run would fail")
+    yield EXAMPLE
 
-    res = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "jupyter",
-            "nbconvert",
-            "--to",
-            "notebook",
-            "--execute",
-            "--output",
-            "/tmp/_nbconvert_out.ipynb",
-            str(EXAMPLE),
-        ],
-        capture_output=True,
-        text=True,
-        timeout=600,
-    )
+
+def test_notebook_file_exists():
+    """Test the quickstart notebook is present on disk."""
+    # Arrange
+    path = EXAMPLE
+    # Act
+    present = path.exists()
+    # Assert
+    assert present, f"missing example: {path}"
+
+
+def test_notebook_uses_supported_nbformat():
+    """Test the notebook declares a supported nbformat version."""
+    # Arrange
+    raw = EXAMPLE.read_text(encoding="utf-8")
+    # Act
+    nb = json.loads(raw)
+    # Assert
+    assert nb.get("nbformat", 0) >= 4, f"unexpected nbformat: {nb.get('nbformat')!r}"
+
+
+def test_notebook_executes_end_to_end(executable_notebook):
+    """Test the notebook runs to completion under nbconvert."""
+    # Arrange
+    cmd = [
+        sys.executable,
+        "-m",
+        "jupyter",
+        "nbconvert",
+        "--to",
+        "notebook",
+        "--execute",
+        "--output",
+        "/tmp/_nbconvert_out.ipynb",
+        str(executable_notebook),
+    ]
+    # Act
+    res = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+    # Assert
     assert res.returncode == 0, f"nbconvert failed:\n{res.stderr}"

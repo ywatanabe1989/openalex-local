@@ -690,6 +690,10 @@ flycheck_*.el
 # network security
 /network-security.data
 
+# Generated test artifacts — created by scripts/create_test_db.py
+# (small sample DB + its source payload). Regenerated in CI; never committed.
+tests/results/
+
 ### Source: /home/ywatanabe/.git-templates/.gitignore-templates/Custom/SQL.gitignore ###
 **/*.db
 **/*.sqlite3
