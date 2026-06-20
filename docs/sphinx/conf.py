@@ -59,8 +59,14 @@ napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True
 napoleon_use_admonition_for_examples = True
 napoleon_use_admonition_for_notes = True
+# Render docstring "Attributes:" sections as :ivar: fields inside the class
+# description rather than as standalone .. attribute:: object descriptions.
+# With autodoc :members: also emitting attribute descriptions for the same
+# (dataclass) fields, the standalone form produced "duplicate object
+# description" warnings (fatal under -W). Keeping ivar form documents each
+# attribute exactly once.
 napoleon_use_admonition_for_references = True
-napoleon_use_ivar = False
+napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_preprocess_types = False
