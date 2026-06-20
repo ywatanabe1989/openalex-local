@@ -144,7 +144,13 @@ Retrieve multiple works by their IDs or DOIs.
 .. code-block:: json
 
    {
-     "works": [...],
+     "works": [
+       {
+         "openalex_id": "W2741809807",
+         "doi": "10.1038/nature12373",
+         "title": "..."
+       }
+     ],
      "found": 2,
      "not_found": []
    }
