@@ -51,9 +51,10 @@ The database can be set up in several ways:
 
 The package searches these locations automatically:
 
-1. ``./openalex.db`` (current directory)
-2. ``~/openalex.db`` (home directory)
-3. ``~/.openalex/openalex.db``
+1. ``./data/openalex.db`` (current project directory)
+2. ``<repo-root>/data/openalex.db`` (repo-anchored)
+3. ``~/.scitex/openalex-local/runtime/openalex.db`` (canonical scitex runtime)
+4. ``~/.openalex_local/openalex.db`` (legacy)
 
 **Option 3: Build from Scratch**
 

@@ -141,7 +141,7 @@ Retrieve multiple works by their IDs or DOIs.
 
 **Response:**
 
-.. code-block:: json
+.. code-block:: text
 
    {
      "works": [

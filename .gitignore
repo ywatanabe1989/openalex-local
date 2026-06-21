@@ -708,3 +708,8 @@ tests/results/
 slurm_logs
 
 .claude/
+
+# scitex ecosystem — ignore regenerable runtime data (cache, jobs, logs, …)
+.scitex/*/runtime/*
+!.scitex/*/runtime/.gitkeep
+!.scitex/*/runtime/README.md

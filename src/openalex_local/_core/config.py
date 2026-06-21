@@ -19,7 +19,9 @@ DEFAULT_DB_PATHS = [
     # invokes openalex-local from `~/proj/scitex-dev/`). Anchored on
     # this source file: <repo>/src/openalex_local/_core/config.py.
     _Path(__file__).resolve().parents[3] / "data" / "openalex.db",
-    # User-state cache directory.
+    # Canonical scitex runtime location.
+    _Path.home() / ".scitex" / "openalex-local" / "runtime" / "openalex.db",
+    # Legacy user-state cache directory (back-compat, will be removed).
     _Path.home() / ".openalex_local" / "openalex.db",
 ]
 
