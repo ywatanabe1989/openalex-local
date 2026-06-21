@@ -57,6 +57,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[all,dev]" || pip install -e ".[dev]" || pip install -e .
+      - name: Create test database
+        run: |
+          if [ -f scripts/create_test_db.py ]; then
+            python scripts/create_test_db.py --rows 500
+          fi
       - name: Run pytest
         run: |
           if [ -d tests ]; then
@@ -101,7 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/scitex-io
+      url: https://pypi.org/p/openalex-local
     permissions:
       id-token: write
     steps:
