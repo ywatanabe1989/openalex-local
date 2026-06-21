@@ -1,0 +1,47 @@
+name: quality
+
+# Single-package quality gate — runs `scitex-dev ecosystem audit-all`
+# against this package (audit-cli / audit-mcp-tools / audit-skills /
+# audit-python-apis / audit-project). Mirrors the canonical audit that
+# `tests/develop/test_audit.py` runs inside the test suite, but as a
+# standalone gate so an audit regression is visible even when the matrix
+# is skipped.
+
+on:
+  schedule:
+    - cron: "0 18 * * *"  # 18:00 UTC (~03:00 JST), after Test
+  workflow_dispatch:
+  push:
+    branches: [develop]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - ".github/workflows/openalex-local-quality-audit-on-ubuntu-latest.yml"
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch main ref for --new-only baseline
+        run: git fetch origin main:main
+
+      - name: Install package + audit tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install "scitex-dev[cli-audit]>=0.17.14"
+
+      - name: Run scitex-dev ecosystem audit-all
+        run: scitex-dev ecosystem audit-all openalex-local --new-only --no-version-check
