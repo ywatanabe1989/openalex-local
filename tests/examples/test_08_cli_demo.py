@@ -7,18 +7,20 @@ EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "08_cli_demo.sh"
 
 
 def test_cli_demo_script_file_exists():
+    """Test the shell demo script is present on disk."""
     # Arrange
     path = EXAMPLE
     # Act
-    found = path.is_file()
+    present = path.is_file()
     # Assert
-    assert found, f"missing example: {path}"
+    assert present, f"missing example: {path}"
 
 
-def test_cli_demo_script_starts_with_comment_or_shebang():
+def test_cli_demo_script_starts_with_comment():
+    """Test the shell demo script opens with a shebang or comment line."""
     # Arrange
-    contents = EXAMPLE.read_text()
+    path = EXAMPLE
     # Act
-    first_char = contents.lstrip()[:1]
+    first_char = path.read_text().lstrip()[:1]
     # Assert
     assert first_char == "#", "expected shell shebang/comment"

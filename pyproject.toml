@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openalex-local"
-version = "0.7.6"
+version = "0.7.9"
 description = "Local OpenAlex database with 284M+ works, abstracts, and semantic search"
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -75,6 +75,16 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 openalex_local = ["_skills/**/*.md"]
+
+[tool.scitex_dev.audit]
+# contributor-assistant/github-action reads its PAT from the env var
+# PERSONAL_ACCESS_TOKEN; the repo secret of the same name (set 2026-03-11)
+# is the CLA-gate token. It is the per-action CLA convention (sibling of
+# the central-list CLA_PERSONAL_ACCESS_TOKEN exception), so it is exempt
+# from the OPENALEX_LOCAL_ per-package prefix (PS-168).
+ps168_secret_exceptions = [
+    "PERSONAL_ACCESS_TOKEN",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

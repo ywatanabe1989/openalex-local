@@ -9,209 +9,197 @@ import pytest
 from openalex_local._core.config import Config, get_db_path
 
 
-_CONFIG_ENV_KEYS = (
-    "OPENALEX_LOCAL_DB",
-    "OPENALEX_LOCAL_API_URL",
-    "OPENALEX_LOCAL_MODE",
-)
+class TestConfig:
+    """Test Config class."""
 
-
-@pytest.fixture
-def isolated_config_env():
-    """Reset Config state and clear OpenAlex env vars for the test.
-
-    Yields nothing; restores the original env on teardown.
-    """
-    Config.reset()
-    saved = {key: os.environ.pop(key, None) for key in _CONFIG_ENV_KEYS}
-    try:
-        yield
-    finally:
+    def setup_method(self):
+        """Reset Config before each test."""
         Config.reset()
-        for key, value in saved.items():
+        # Clear environment variables
+        self._original_env = {}
+        for key in [
+            "OPENALEX_LOCAL_DB",
+            "OPENALEX_LOCAL_API_URL",
+            "OPENALEX_LOCAL_MODE",
+        ]:
+            self._original_env[key] = os.environ.pop(key, None)
+
+    def teardown_method(self):
+        """Restore environment after each test."""
+        Config.reset()
+        for key, value in self._original_env.items():
             if value is not None:
                 os.environ[key] = value
-            else:
-                os.environ.pop(key, None)
 
+    def test_get_mode_default_is_auto(self):
+        """Test that the default internal mode is auto."""
+        # Arrange
+        Config.reset()
+        # Act
+        mode = Config._mode
+        # Assert
+        assert mode == "auto"
 
-@pytest.fixture
-def temp_db_path():
-    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
-        path = f.name
-    try:
-        yield path
-    finally:
+    def test_get_mode_returns_db_when_db_file_exists(self):
+        """Test that mode returns db when the database file exists."""
+        # Arrange
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            temp_path = f.name
+        os.environ["OPENALEX_LOCAL_DB"] = temp_path
+        Config.reset()
+        # Act
         try:
-            os.unlink(path)
-        except FileNotFoundError:
-            pass
-
-
-# ---------------------------------------------------------------------------
-# Config class state machine
-# ---------------------------------------------------------------------------
-
-def test_config_default_internal_mode_is_auto(isolated_config_env):
-    # Arrange
-    expected = "auto"
-    # Act
-    value = Config._mode
-    # Assert
-    assert value == expected
-
-
-def test_config_mode_becomes_db_when_env_points_at_real_file(
-    isolated_config_env, temp_db_path
-):
-    # Arrange
-    os.environ["OPENALEX_LOCAL_DB"] = temp_db_path
-    Config.reset()
-    # Act
-    mode = Config.get_mode()
-    # Assert
-    assert mode == "db"
-
-
-def test_config_mode_becomes_http_when_api_url_env_set(isolated_config_env):
-    # Arrange
-    os.environ["OPENALEX_LOCAL_API_URL"] = "http://localhost:8080"
-    # Act
-    mode = Config.get_mode()
-    # Assert
-    assert mode == "http"
-
-
-def test_config_set_api_url_switches_mode_to_http(isolated_config_env):
-    # Arrange
-    Config.set_api_url("http://example.com:1234")
-    # Act
-    mode = Config.get_mode()
-    # Assert
-    assert mode == "http"
-
-
-def test_config_set_api_url_persists_url_for_get_api_url(isolated_config_env):
-    # Arrange
-    Config.set_api_url("http://example.com:1234")
-    # Act
-    url = Config.get_api_url()
-    # Assert
-    assert url == "http://example.com:1234"
-
-
-def test_config_get_api_url_default_is_localhost_31292(isolated_config_env):
-    # Arrange
-    expected = "http://localhost:31292"
-    # Act
-    url = Config.get_api_url()
-    # Assert
-    assert url == expected
-
-
-def test_config_get_api_url_reads_from_openalex_local_api_url_env(
-    isolated_config_env,
-):
-    # Arrange
-    os.environ["OPENALEX_LOCAL_API_URL"] = "http://custom:9999"
-    Config.reset()
-    # Act
-    url = Config.get_api_url()
-    # Assert
-    assert url == "http://custom:9999"
-
-
-def test_config_set_db_path_with_existing_file_records_path(
-    isolated_config_env, temp_db_path
-):
-    # Arrange
-    Config.set_db_path(temp_db_path)
-    # Act
-    stored = Config.get_db_path()
-    # Assert
-    assert stored == Path(temp_db_path)
-
-
-def test_config_set_db_path_with_existing_file_sets_mode_to_db(
-    isolated_config_env, temp_db_path
-):
-    # Arrange
-    Config.set_db_path(temp_db_path)
-    # Act
-    mode = Config.get_mode()
-    # Assert
-    assert mode == "db"
-
-
-def test_config_set_db_path_raises_for_nonexistent_file(isolated_config_env):
-    # Arrange
-    bogus = "/nonexistent/path/to/db.db"
-    # Act
-    ctx = pytest.raises(FileNotFoundError)
-    # Assert
-    with ctx:
-        Config.set_db_path(bogus)
-
-
-def test_config_reset_clears_db_path(isolated_config_env):
-    # Arrange
-    Config.set_api_url("http://test:1234")
-    # Act
-    Config.reset()
-    # Assert
-    assert Config._db_path is None
-
-
-def test_config_reset_clears_api_url(isolated_config_env):
-    # Arrange
-    Config.set_api_url("http://test:1234")
-    # Act
-    Config.reset()
-    # Assert
-    assert Config._api_url is None
-
-
-def test_config_reset_returns_internal_mode_to_auto(isolated_config_env):
-    # Arrange
-    Config.set_api_url("http://test:1234")
-    # Act
-    Config.reset()
-    # Assert
-    assert Config._mode == "auto"
-
-
-# ---------------------------------------------------------------------------
-# get_db_path() helper — env-driven path resolution
-# ---------------------------------------------------------------------------
-
-@pytest.fixture
-def isolated_db_env():
-    saved = os.environ.pop("OPENALEX_LOCAL_DB", None)
-    try:
-        yield
-    finally:
-        if saved is not None:
-            os.environ["OPENALEX_LOCAL_DB"] = saved
-        else:
+            mode = Config.get_mode()
+        finally:
+            os.unlink(temp_path)
             os.environ.pop("OPENALEX_LOCAL_DB", None)
+        # Assert
+        assert mode == "db"
+
+    def test_get_mode_returns_http_when_api_url_env_set(self):
+        """Test that mode is http when OPENALEX_LOCAL_API_URL is set."""
+        # Arrange
+        os.environ["OPENALEX_LOCAL_API_URL"] = "http://localhost:8080"
+        # Act
+        mode = Config.get_mode()
+        # Assert
+        assert mode == "http"
+
+    def test_set_api_url_changes_mode_to_http(self):
+        """Test that set_api_url switches the mode to http."""
+        # Arrange
+        Config.set_api_url("http://example.com:1234")
+        # Act
+        mode = Config.get_mode()
+        # Assert
+        assert mode == "http"
+
+    def test_set_api_url_stores_the_url(self):
+        """Test that set_api_url records the supplied URL."""
+        # Arrange
+        Config.set_api_url("http://example.com:1234")
+        # Act
+        url = Config.get_api_url()
+        # Assert
+        assert url == "http://example.com:1234"
+
+    def test_get_api_url_default_is_localhost(self):
+        """Test the default API URL points at localhost."""
+        # Arrange
+        Config.reset()
+        # Act
+        url = Config.get_api_url()
+        # Assert
+        assert url == "http://localhost:31292"
+
+    def test_get_api_url_reads_from_env(self):
+        """Test the API URL is read from the environment."""
+        # Arrange
+        os.environ["OPENALEX_LOCAL_API_URL"] = "http://custom:9999"
+        Config.reset()
+        # Act
+        url = Config.get_api_url()
+        # Assert
+        assert url == "http://custom:9999"
+
+    def test_set_db_path_returns_existing_path(self):
+        """Test set_db_path stores a path to an existing file."""
+        # Arrange
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            temp_path = f.name
+        # Act
+        try:
+            Config.set_db_path(temp_path)
+            stored = Config.get_db_path()
+        finally:
+            os.unlink(temp_path)
+        # Assert
+        assert stored == Path(temp_path)
+
+    def test_set_db_path_with_existing_file_sets_mode_db(self):
+        """Test set_db_path with an existing file switches mode to db."""
+        # Arrange
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            temp_path = f.name
+        # Act
+        try:
+            Config.set_db_path(temp_path)
+            mode = Config.get_mode()
+        finally:
+            os.unlink(temp_path)
+        # Assert
+        assert mode == "db"
+
+    def test_set_db_path_with_nonexistent_file_raises(self):
+        """Test set_db_path raises FileNotFoundError for a missing file."""
+        # Arrange
+        missing = "/nonexistent/path/to/db.db"
+        # Act
+        ctx = pytest.raises(FileNotFoundError)
+        # Assert
+        with ctx:
+            Config.set_db_path(missing)
+
+    def test_reset_clears_db_path(self):
+        """Test that reset clears the stored db path."""
+        # Arrange
+        Config.set_api_url("http://test:1234")
+        # Act
+        Config.reset()
+        # Assert
+        assert Config._db_path is None
+
+    def test_reset_clears_api_url(self):
+        """Test that reset clears the stored API URL."""
+        # Arrange
+        Config.set_api_url("http://test:1234")
+        # Act
+        Config.reset()
+        # Assert
+        assert Config._api_url is None
+
+    def test_reset_restores_auto_mode(self):
+        """Test that reset restores the auto mode."""
+        # Arrange
+        Config.set_api_url("http://test:1234")
+        # Act
+        Config.reset()
+        # Assert
+        assert Config._mode == "auto"
 
 
-def test_get_db_path_returns_env_path_when_file_exists(
-    isolated_db_env, temp_db_path
-):
-    # Arrange
-    os.environ["OPENALEX_LOCAL_DB"] = temp_db_path
-    # Act
-    path = get_db_path()
-    # Assert
-    assert path == Path(temp_db_path)
+class TestGetDbPath:
+    """Test get_db_path function."""
 
+    def setup_method(self):
+        """Clear environment before each test."""
+        self._original_db = os.environ.pop("OPENALEX_LOCAL_DB", None)
 
-def test_get_db_path_raises_when_env_path_does_not_exist(isolated_db_env):
-    # Arrange
-    os.environ["OPENALEX_LOCAL_DB"] = "/nonexistent/path.db"
-    # Act
-    ctx = pytest.raises(FileNotFoundError, match="OPENALEX_LOCAL_DB")
-    # Assert
-    with ctx:
-        get_db_path()
+    def teardown_method(self):
+        """Restore environment after each test."""
+        if self._original_db is not None:
+            os.environ["OPENALEX_LOCAL_DB"] = self._original_db
+
+    def test_get_db_path_returns_existing_env_path(self):
+        """Test get_db_path returns the env path when it exists."""
+        # Arrange
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            temp_path = f.name
+        os.environ["OPENALEX_LOCAL_DB"] = temp_path
+        # Act
+        try:
+            resolved = get_db_path()
+        finally:
+            os.unlink(temp_path)
+        # Assert
+        assert resolved == Path(temp_path)
+
+    def test_get_db_path_raises_when_env_path_missing(self):
+        """Test get_db_path raises FileNotFoundError for a missing env path."""
+        # Arrange
+        os.environ["OPENALEX_LOCAL_DB"] = "/nonexistent/path.db"
+        # Act
+        ctx = pytest.raises(FileNotFoundError)
+        # Assert
+        with ctx:
+            get_db_path()

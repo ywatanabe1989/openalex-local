@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = "OpenAlex Local"
 copyright = "2025, Yusuke Watanabe"
 author = "Yusuke Watanabe"
-release = "0.7.6"
+release = "0.4.0"
 
 # -- General configuration ---------------------------------------------------
 
@@ -59,9 +59,14 @@ napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True
 napoleon_use_admonition_for_examples = True
 napoleon_use_admonition_for_notes = True
+# Render docstring "Attributes:" sections as :ivar: fields inside the class
+# description rather than as standalone .. attribute:: object descriptions.
+# With autodoc :members: also emitting attribute descriptions for the same
+# (dataclass) fields, the standalone form produced "duplicate object
+# description" warnings (fatal under -W). Keeping ivar form documents each
+# attribute exactly once.
 napoleon_use_admonition_for_references = True
-napoleon_use_ivar = True  # emit :ivar: so attributes aren't double-documented
-# alongside autodoc's dataclass-field descriptions
+napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
 napoleon_preprocess_types = False

@@ -8,309 +8,213 @@ import pytest
 from openalex_local import jobs
 
 
-# ---------------------------------------------------------------------------
-# Public API surface
-# ---------------------------------------------------------------------------
-
-def test_jobs_module_exports_create_attribute():
-    # Arrange
-    target = jobs
-    # Act
-    present = hasattr(target, "create")
-    # Assert
-    assert present
+JOBS_PUBLIC_API = ["create", "get", "list_jobs", "run"]
 
 
-def test_jobs_module_exports_get_attribute():
-    # Arrange
-    target = jobs
-    # Act
-    present = hasattr(target, "get")
-    # Assert
-    assert present
-
-
-def test_jobs_module_exports_list_jobs_attribute():
-    # Arrange
-    target = jobs
-    # Act
-    present = hasattr(target, "list_jobs")
-    # Assert
-    assert present
-
-
-def test_jobs_module_exports_run_attribute():
-    # Arrange
-    target = jobs
-    # Act
-    present = hasattr(target, "run")
-    # Assert
-    assert present
-
-
-def test_jobs_create_is_callable():
-    # Arrange
-    target = jobs.create
-    # Act
-    callable_now = callable(target)
-    # Assert
-    assert callable_now
-
-
-def test_jobs_get_is_callable():
-    # Arrange
-    target = jobs.get
-    # Act
-    callable_now = callable(target)
-    # Assert
-    assert callable_now
-
-
-def test_jobs_list_jobs_is_callable():
-    # Arrange
-    target = jobs.list_jobs
-    # Act
-    callable_now = callable(target)
-    # Assert
-    assert callable_now
-
-
-def test_jobs_run_is_callable():
-    # Arrange
-    target = jobs.run
-    # Act
-    callable_now = callable(target)
-    # Assert
-    assert callable_now
-
-
-# ---------------------------------------------------------------------------
-# _JobQueue.create — internal API
-# ---------------------------------------------------------------------------
-
-@pytest.fixture
-def temp_queue():
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield jobs._JobQueue(jobs_dir=Path(tmpdir))
-
-
-def test_queue_create_returns_object_with_id_attribute(temp_queue):
-    # Arrange
-    items = ["item1", "item2"]
-    # Act
-    job = temp_queue.create(items=items, name="test_job")
-    # Assert
-    assert hasattr(job, "id")
-
-
-def test_queue_create_assigns_items_to_returned_job(temp_queue):
-    # Arrange
-    items = ["item1", "item2"]
-    # Act
-    job = temp_queue.create(items=items, name="test_job")
-    # Assert
-    assert job.items == items
-
-
-def test_queue_create_stores_name_in_metadata(temp_queue):
-    # Arrange
-    items = ["item1", "item2"]
-    # Act
-    job = temp_queue.create(items=items, name="test_job")
-    # Assert
-    assert job.metadata.get("name") == "test_job"
-
-
-def test_queue_create_persists_job_for_load_by_id(temp_queue):
-    # Arrange
-    items = ["item1", "item2", "item3"]
-    job = temp_queue.create(items=items, name="test_job")
-    # Act
-    loaded = temp_queue.load(job.id)
-    # Assert
-    assert loaded is not None
-
-
-def test_queue_load_preserves_metadata_name_round_trip(temp_queue):
-    # Arrange
-    items = ["item1", "item2", "item3"]
-    job = temp_queue.create(items=items, name="test_job")
-    # Act
-    loaded = temp_queue.load(job.id)
-    # Assert
-    assert loaded.metadata.get("name") == "test_job"
-
-
-def test_queue_load_preserves_items_round_trip(temp_queue):
-    # Arrange
-    items = ["item1", "item2", "item3"]
-    job = temp_queue.create(items=items, name="test_job")
-    # Act
-    loaded = temp_queue.load(job.id)
-    # Assert
-    assert loaded.items == items
-
-
-def test_queue_load_returns_none_for_unknown_job_id(temp_queue):
-    # Arrange
-    unknown_id = "nonexistent_job_id"
-    # Act
-    result = temp_queue.load(unknown_id)
-    # Assert
-    assert result is None
-
-
-def test_queue_list_returns_list_instance(temp_queue):
-    # Arrange
-    queue = temp_queue
-    # Act
-    result = queue.list()
-    # Assert
-    assert isinstance(result, list)
-
-
-def test_queue_list_includes_created_job_ids(temp_queue):
-    # Arrange
-    job1 = temp_queue.create(items=["a"], name="job1")
-    job2 = temp_queue.create(items=["b"], name="job2")
-    # Act
-    listed_ids = {j.id for j in temp_queue.list()}
-    # Assert
-    assert {job1.id, job2.id}.issubset(listed_ids)
-
-
-def test_queue_delete_returns_true_for_existing_job(temp_queue):
-    # Arrange
-    job = temp_queue.create(items=["a"])
-    # Act
-    result = temp_queue.delete(job.id)
-    # Assert
-    assert result is True
-
-
-def test_queue_delete_removes_job_from_subsequent_load(temp_queue):
-    # Arrange
-    job = temp_queue.create(items=["a"])
-    temp_queue.delete(job.id)
-    # Act
-    loaded = temp_queue.load(job.id)
-    # Assert
-    assert loaded is None
-
-
-# ---------------------------------------------------------------------------
-# _Job dataclass — internal API
-# ---------------------------------------------------------------------------
-
-def test_job_pending_returns_only_unprocessed_items():
-    # Arrange
-    job = jobs._Job(id="test", items=["a", "b", "c"])
-    job.completed = ["a"]
-    job.failed = {"b": "error"}
-    # Act
-    pending = job.pending
-    # Assert
-    assert pending == ["c"]
-
-
-def test_job_progress_property_returns_percent_completed():
-    # Arrange
-    job = jobs._Job(id="test", items=["a", "b", "c", "d"])
-    job.completed = ["a", "b"]
-    # Act
-    progress = job.progress
-    # Assert
-    assert progress == 50.0
-
-
-@pytest.fixture
-def serialized_simple_job():
-    job = jobs._Job(id="test123", items=["x", "y"])
-    return job.to_dict()
-
-
-def test_job_to_dict_serializes_id(serialized_simple_job):
-    # Arrange
-    payload = serialized_simple_job
-    # Act
-    value = payload["id"]
-    # Assert
-    assert value == "test123"
-
-
-def test_job_to_dict_serializes_items(serialized_simple_job):
-    # Arrange
-    payload = serialized_simple_job
-    # Act
-    value = payload["items"]
-    # Assert
-    assert value == ["x", "y"]
-
-
-def test_job_to_dict_includes_status_key(serialized_simple_job):
-    # Arrange
-    payload = serialized_simple_job
-    # Act
-    present = "status" in payload
-    # Assert
-    assert present
-
-
-def test_job_to_dict_includes_created_at_key(serialized_simple_job):
-    # Arrange
-    payload = serialized_simple_job
-    # Act
-    present = "created_at" in payload
-    # Assert
-    assert present
-
-
-@pytest.fixture
-def deserialized_running_job():
-    data = {
+def _sample_job_dict():
+    """Return a serialized job dict for from_dict round-trips."""
+    return {
         "id": "test456",
         "items": ["p", "q"],
         "completed": ["p"],
         "failed": {},
         "status": "running",
-        "created_at": 1_234_567_890.0,
-        "updated_at": 1_234_567_890.0,
+        "created_at": 1234567890.0,
+        "updated_at": 1234567890.0,
         "metadata": {"name": "test"},
     }
-    return jobs._Job.from_dict(data)
 
 
-def test_job_from_dict_restores_id(deserialized_running_job):
-    # Arrange
-    job = deserialized_running_job
-    # Act
-    value = job.id
-    # Assert
-    assert value == "test456"
+class TestJobsModule:
+    """Test the jobs module public API."""
+
+    @pytest.mark.parametrize("name", JOBS_PUBLIC_API)
+    def test_jobs_module_exposes_callable(self, name):
+        """Test the jobs module exposes each public function as callable."""
+        # Arrange
+        attr = getattr(jobs, name, None)
+        # Act
+        is_callable = callable(attr)
+        # Assert
+        assert is_callable is True
 
 
-def test_job_from_dict_restores_items(deserialized_running_job):
-    # Arrange
-    job = deserialized_running_job
-    # Act
-    value = job.items
-    # Assert
-    assert value == ["p", "q"]
+class TestJobQueueInternal:
+    """Test _JobQueue class directly with temp directory (internal API)."""
+
+    @pytest.fixture
+    def queue(self):
+        """Return a _JobQueue backed by a throwaway directory."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield jobs._JobQueue(jobs_dir=Path(tmpdir))
+
+    def test_create_returns_job_with_items(self, queue):
+        """Test create returns a job carrying the supplied items."""
+        # Arrange
+        items = ["item1", "item2"]
+        # Act
+        job = queue.create(items=items, name="test_job")
+        # Assert
+        assert job.items == ["item1", "item2"]
+
+    def test_create_records_job_name_in_metadata(self, queue):
+        """Test create stores the job name in its metadata."""
+        # Arrange
+        items = ["item1", "item2"]
+        # Act
+        job = queue.create(items=items, name="test_job")
+        # Assert
+        assert job.metadata.get("name") == "test_job"
+
+    def test_create_persists_job_for_reload(self, queue):
+        """Test a created job can be loaded back from disk."""
+        # Arrange
+        job = queue.create(items=["item1", "item2", "item3"], name="test_job")
+        # Act
+        loaded = queue.load(job.id)
+        # Assert
+        assert loaded is not None
+
+    def test_create_persists_all_items(self, queue):
+        """Test a reloaded job preserves every item."""
+        # Arrange
+        job = queue.create(items=["item1", "item2", "item3"], name="test_job")
+        # Act
+        loaded = queue.load(job.id)
+        # Assert
+        assert len(loaded.items) == 3
+
+    def test_load_nonexistent_job_returns_none(self, queue):
+        """Test loading an unknown job id returns None."""
+        # Arrange
+        unknown_id = "nonexistent_job_id"
+        # Act
+        result = queue.load(unknown_id)
+        # Assert
+        assert result is None
+
+    def test_list_returns_list_type(self, queue):
+        """Test list returns a list even when empty."""
+        # Arrange
+        empty_queue = queue
+        # Act
+        result = empty_queue.list()
+        # Assert
+        assert isinstance(result, list)
+
+    def test_list_includes_created_jobs(self, queue):
+        """Test list includes the ids of created jobs."""
+        # Arrange
+        job1 = queue.create(items=["a"], name="job1")
+        job2 = queue.create(items=["b"], name="job2")
+        # Act
+        job_ids = [j.id for j in queue.list()]
+        # Assert
+        assert job1.id in job_ids and job2.id in job_ids
+
+    def test_delete_reports_success(self, queue):
+        """Test delete returns True when removing an existing job."""
+        # Arrange
+        job = queue.create(items=["a"])
+        # Act
+        result = queue.delete(job.id)
+        # Assert
+        assert result is True
+
+    def test_delete_removes_job_from_store(self, queue):
+        """Test a deleted job can no longer be loaded."""
+        # Arrange
+        job = queue.create(items=["a"])
+        queue.delete(job.id)
+        # Act
+        loaded = queue.load(job.id)
+        # Assert
+        assert loaded is None
 
 
-def test_job_from_dict_restores_completed(deserialized_running_job):
-    # Arrange
-    job = deserialized_running_job
-    # Act
-    value = job.completed
-    # Assert
-    assert value == ["p"]
+class TestJobInternal:
+    """Test _Job dataclass (internal API)."""
 
+    def test_job_pending_excludes_completed_and_failed(self):
+        """Test pending returns items neither completed nor failed."""
+        # Arrange
+        job = jobs._Job(id="test", items=["a", "b", "c"])
+        job.completed = ["a"]
+        job.failed = {"b": "error"}
+        # Act
+        pending = job.pending
+        # Assert
+        assert pending == ["c"]
 
-def test_job_from_dict_restores_status_string(deserialized_running_job):
-    # Arrange
-    job = deserialized_running_job
-    # Act
-    value = job.status
-    # Assert
-    assert value == "running"
+    def test_job_progress_reports_completion_percentage(self):
+        """Test progress returns the completed fraction as a percentage."""
+        # Arrange
+        job = jobs._Job(id="test", items=["a", "b", "c", "d"])
+        job.completed = ["a", "b"]
+        # Act
+        progress = job.progress
+        # Assert
+        assert progress == 50.0
+
+    def test_job_to_dict_includes_id(self):
+        """Test to_dict serializes the job id."""
+        # Arrange
+        job = jobs._Job(id="test123", items=["x", "y"])
+        # Act
+        d = job.to_dict()
+        # Assert
+        assert d["id"] == "test123"
+
+    def test_job_to_dict_includes_items(self):
+        """Test to_dict serializes the job items."""
+        # Arrange
+        job = jobs._Job(id="test123", items=["x", "y"])
+        # Act
+        d = job.to_dict()
+        # Assert
+        assert d["items"] == ["x", "y"]
+
+    def test_job_to_dict_includes_status(self):
+        """Test to_dict serializes the job status field."""
+        # Arrange
+        job = jobs._Job(id="test123", items=["x", "y"])
+        # Act
+        d = job.to_dict()
+        # Assert
+        assert "status" in d
+
+    def test_job_from_dict_restores_id(self):
+        """Test from_dict reconstructs the job id."""
+        # Arrange
+        data = _sample_job_dict()
+        # Act
+        job = jobs._Job.from_dict(data)
+        # Assert
+        assert job.id == "test456"
+
+    def test_job_from_dict_restores_items(self):
+        """Test from_dict reconstructs the job items."""
+        # Arrange
+        data = _sample_job_dict()
+        # Act
+        job = jobs._Job.from_dict(data)
+        # Assert
+        assert job.items == ["p", "q"]
+
+    def test_job_from_dict_restores_completed(self):
+        """Test from_dict reconstructs the completed list."""
+        # Arrange
+        data = _sample_job_dict()
+        # Act
+        job = jobs._Job.from_dict(data)
+        # Assert
+        assert job.completed == ["p"]
+
+    def test_job_from_dict_restores_status(self):
+        """Test from_dict reconstructs the running status."""
+        # Arrange
+        data = _sample_job_dict()
+        # Act
+        job = jobs._Job.from_dict(data)
+        # Assert
+        assert job.status == "running"

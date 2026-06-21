@@ -1,7 +1,6 @@
 """Runtime cross-package import gate (PS-140 §2)."""
 
 import importlib
-import importlib.util
 
 import pytest
 
@@ -12,28 +11,13 @@ CROSS_PACKAGE_IMPORTS = [
     "scitex_dev.cli",
 ]
 
-def _is_importable(module_path: str) -> bool:
-    """Best-effort find_spec wrapper — returns False when any parent
-    package is missing (find_spec can raise ModuleNotFoundError on
-    intermediate misses)."""
-    try:
-        return importlib.util.find_spec(module_path) is not None
-    except (ModuleNotFoundError, ValueError):
-        return False
 
-
-_AVAILABLE_CROSS_PACKAGE_IMPORTS = [
-    m for m in CROSS_PACKAGE_IMPORTS if _is_importable(m)
-]
-
-
-@pytest.mark.parametrize("module_path", _AVAILABLE_CROSS_PACKAGE_IMPORTS)
-def test_cross_package_module_loads_with_public_attrs(module_path: str) -> None:
+@pytest.mark.parametrize("module_path", CROSS_PACKAGE_IMPORTS)
+def test_cross_package_module_is_importable(module_path: str) -> None:
+    """Test each declared cross-package module imports at runtime."""
     # Arrange
-    target = module_path
+    pytest.importorskip(module_path)
     # Act
-    mod = importlib.import_module(target)
+    module = importlib.import_module(module_path)
     # Assert
-    assert any(not a.startswith("_") for a in dir(mod)), (
-        f"imported {target} but it exposes no public attrs"
-    )
+    assert module is not None

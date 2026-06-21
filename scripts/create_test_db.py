@@ -20,10 +20,14 @@ from urllib.error import HTTPError
 from urllib.parse import quote
 
 # Paths
+# Output lives under tests/results/ — a gitignored, audit-recognized test
+# subdir (PS-302). The generated DB and sample payload are run artifacts,
+# not committed fixtures, so they belong in results/, not a bespoke
+# fixtures/ dir (which trips PS-302 tests-unknown-subdir).
 SCRIPT_DIR = Path(__file__).parent
 PROJECT_ROOT = SCRIPT_DIR.parent
-TEST_DB_PATH = PROJECT_ROOT / "tests" / "openalex_local" / "fixtures" / "test_openalex.db"
-SAMPLE_JSON_PATH = PROJECT_ROOT / "tests" / "openalex_local" / "fixtures" / "sample_works.json"
+TEST_DB_PATH = PROJECT_ROOT / "tests" / "results" / "test_openalex.db"
+SAMPLE_JSON_PATH = PROJECT_ROOT / "tests" / "results" / "sample_works.json"
 
 # OpenAlex API
 OPENALEX_API = "https://api.openalex.org/works"

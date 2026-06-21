@@ -1,0 +1,27 @@
+# scitex-dev audit-cli — per-package vocabulary additions for openalex-local.
+#
+# Format expected by scitex_dev/_cli/audit/_summary/_audit.py::_load_custom_dict():
+#   nouns:              [...]
+#   transitive_verbs:   [...]
+#   intransitive_verbs: [...]
+#
+# Keys must match exactly. The auditor merges this dict with its base
+# catalog + Moby POS, then classifies each CLI sub-command token. A token
+# listed here OVERRIDES the catalog/Moby classification (custom dict wins),
+# so a noun-homonym placed under `intransitive_verbs:` is treated as a
+# complete (intransitive) verb and no longer trips §1. This is the
+# documented escape hatch the §1 violation message points to (the same one
+# `scitex-todo next` uses).
+
+intransitive_verbs:
+  # `openalex-local relay` — run the HTTP relay server that fronts the
+  # local database for remote clients. The action is a complete unit
+  # ("relay the database over HTTP"); Moby classifies "relay" as both a
+  # noun and a verb, and here the intransitive verb meaning is intended —
+  # the server takes its bind host/port as options, not a positional
+  # object. This matches the established daemon idiom (`openalex-local
+  # relay` already appears in the package's own --help and error hints,
+  # e.g. "On the db-host: openalex-local relay"). Renaming to a
+  # `<verb>-relay` form (start-relay/run-relay) would break that
+  # documented command and the muscle-memory of existing operators.
+  - relay
