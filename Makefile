@@ -12,8 +12,12 @@ SHELL := /bin/bash
 PROJECT_ROOT := $(shell pwd)
 SCRIPTS := $(PROJECT_ROOT)/scripts
 PYTHON := python3
-DB_PATH := $(PROJECT_ROOT)/data/openalex.db
-SNAPSHOT_DIR := $(PROJECT_ROOT)/data/snapshot/works
+# DB and snapshot paths honor the same env vars the scitex_dev.jobs
+# provider reads — so `make update` and the cron-driven JobSpec resolve
+# to the same canonical files. Override with:
+#   SCITEX_OPENALEX_DB_PATH=/path/to/openalex.db make update
+DB_PATH ?= $(if $(SCITEX_OPENALEX_DB_PATH),$(SCITEX_OPENALEX_DB_PATH),$(PROJECT_ROOT)/data/openalex.db)
+SNAPSHOT_DIR ?= $(if $(SCITEX_OPENALEX_SNAPSHOT_DIR),$(SCITEX_OPENALEX_SNAPSHOT_DIR),$(PROJECT_ROOT)/data/snapshot/works)
 
 .PHONY: help status check install dev test \
         update update-dry-run update-since \
