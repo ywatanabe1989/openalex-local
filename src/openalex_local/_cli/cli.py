@@ -260,85 +260,22 @@ def search_cmd(
         click.echo()
 
 
-@cli.command("search-by-doi")
-@click.argument("doi")
-@click.option("--json", "as_json", is_flag=True, help="Output as JSON")
-@click.option("--citation", is_flag=True, help="Output as APA citation")
-@click.option("--bibtex", is_flag=True, help="Output as BibTeX entry")
-@click.option("--save", "save_path", type=click.Path(), help="Save result to file")
-@click.option(
-    "--format",
-    "save_format",
-    type=click.Choice(["text", "json", "bibtex"]),
-    default="json",
-    help="Output format for --save (default: json)",
-)
-def search_by_doi_cmd(doi, as_json, citation, bibtex, save_path, save_format):
-    """Search for a work by DOI.
+# search-by-doi command (extracted to separate module for line limit)
+from .search_by_doi import search_by_doi_cmd
 
-    \b
-    Example:
-      $ openalex-local search-by-doi 10.1038/nature12373
-      $ openalex-local search-by-doi 10.1038/nature12373 --json
-      $ openalex-local search-by-doi 10.1038/nature12373 --bibtex
-    """
-    from .. import get
-
-    try:
-        work = get(doi)
-    except FileNotFoundError as e:
-        click.secho(f"Error: {e}", fg="red", err=True)
-        sys.exit(1)
-
-    if work is None:
-        click.secho(f"Not found: {doi}", fg="red", err=True)
-        sys.exit(1)
-
-    # Save to file if requested
-    if save_path:
-        from .._core.export import save as _save
-
-        try:
-            saved = _save(work, save_path, format=save_format)
-            click.secho(f"Saved to {saved}", fg="green", err=True)
-        except Exception as e:
-            click.secho(f"Error saving: {e}", fg="red", err=True)
-            sys.exit(1)
-
-    if citation:
-        click.echo(work.citation("apa"))
-        return
-
-    if bibtex:
-        click.echo(work.citation("bibtex"))
-        return
-
-    if as_json:
-        click.echo(json.dumps(work.to_dict(), indent=2))
-        return
-
-    click.secho(work.title, fg="cyan", bold=True)
-    click.echo(f"DOI: {work.doi}")
-    click.echo(f"OpenAlex ID: {work.openalex_id}")
-    click.echo(f"Year: {work.year or 'N/A'}")
-    click.echo(f"Journal: {work.source or 'N/A'}")
-    click.echo(f"Type: {work.type or 'N/A'}")
-    click.echo(f"Citations: {work.cited_by_count or 0}")
-
-    if work.authors:
-        click.echo(f"Authors: {', '.join(work.authors)}")
-
-    if work.abstract:
-        click.echo(f"\nAbstract:\n{work.abstract}")
-
-    if work.is_oa and work.oa_url:
-        click.echo(f"\nOpen Access: {work.oa_url}")
+cli.add_command(search_by_doi_cmd)
 
 
 # Status command (extracted to separate module for line limit)
 from .status import status_cmd
 
 cli.add_command(status_cmd)
+
+
+# Update command (extracted to separate module for line limit)
+from .update import update_cmd
+
+cli.add_command(update_cmd)
 
 
 # Register MCP subcommand group
@@ -409,92 +346,10 @@ def relay(host: str, port: int, force: bool):
     run_server(host=host, port=port)
 
 
-@cli.command("export-if")
-@click.option(
-    "-o", "--output", default="scitex_if.csv", help="Output file (csv or json)"
-)
-@click.option(
-    "--format",
-    "fmt",
-    type=click.Choice(["csv", "json"]),
-    default=None,
-    help="Output format (auto from extension)",
-)
-@click.option("--limit", type=int, default=0, help="Limit rows (0=all)")
-@click.option(
-    "--dry-run",
-    is_flag=True,
-    help="Show what would be exported without writing the file.",
-)
-@click.option(
-    "-y", "--yes", is_flag=True, help="Skip confirmation prompts (assume yes)."
-)
-def export_if(output, fmt, limit, dry_run, yes):
-    """Export SciTeX Impact Factors (OpenAlex) to CSV or JSON.
+# export-if command (extracted to separate module for line limit)
+from .export_if import export_if
 
-    Exports precomputed journal impact factors from the database.
-    Note: These are SciTeX IF values calculated from OpenAlex data,
-    not JCR Impact Factors.
-
-    \b
-    Example:
-      $ openalex-local export-if -o scitex_if.csv
-      $ openalex-local export-if -o scitex_if.json --format json
-      $ openalex-local export-if --limit 1000 --dry-run
-    """
-    if dry_run:
-        click.secho(
-            f"[dry-run] would export SciTeX IFs to {output} (format={fmt or 'auto'}, limit={limit or 'all'})",
-            fg="yellow",
-        )
-        return
-
-    from .._core.db import get_db
-
-    db = get_db()
-    if not db.db_path:
-        click.secho("Error: Database not configured", fg="red")
-        sys.exit(1)
-
-    cursor = db.conn.cursor()
-
-    # Check if table exists
-    cursor.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='journal_impact_factors'"
-    )
-    if not cursor.fetchone():
-        click.secho("Error: journal_impact_factors table not found", fg="red")
-        click.echo("Run: make build-if-table")
-        sys.exit(1)
-
-    # Get data
-    query = "SELECT issn, journal_name, year, impact_factor FROM journal_impact_factors WHERE impact_factor IS NOT NULL ORDER BY impact_factor DESC"
-    if limit > 0:
-        query += f" LIMIT {limit}"
-
-    cursor.execute(query)
-    rows = cursor.fetchall()
-
-    # Determine format
-    if fmt is None:
-        fmt = "json" if output.endswith(".json") else "csv"
-
-    if fmt == "json":
-        data = [
-            {"issn": r[0], "journal": r[1], "year": r[2], "scitex_if": r[3]}
-            for r in rows
-        ]
-        with open(output, "w") as f:
-            json.dump(data, f, indent=2)
-    else:
-        import csv
-
-        with open(output, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(["issn", "journal", "year", "scitex_if"])
-            writer.writerows(rows)
-
-    click.secho(f"Exported {len(rows):,} SciTeX IF values to {output}", fg="green")
+cli.add_command(export_if)
 
 
 # Register docs and skills subcommands (from scitex-dev)

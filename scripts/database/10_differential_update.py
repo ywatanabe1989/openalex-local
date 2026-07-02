@@ -23,6 +23,7 @@ import argparse
 import gzip
 import json
 import logging
+import os
 import sqlite3
 import subprocess
 import sys
@@ -38,7 +39,12 @@ from _build_helpers import parse_work  # noqa: E402
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_SNAPSHOT_DIR = PROJECT_ROOT / "data" / "snapshot" / "works"
 DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "openalex.db"
-OPENALEX_S3_BASE = "s3://openalex/data/works/"
+# OpenAlex restructured the snapshot in 2026: works moved from
+# s3://openalex/data/works/ to s3://openalex/data/jsonl/works/ (updated_date=
+# partitions unchanged). Overridable via OPENALEX_S3_BASE for future moves.
+OPENALEX_S3_BASE = os.environ.get(
+    "OPENALEX_S3_BASE", "s3://openalex/data/jsonl/works/"
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -272,7 +278,12 @@ def differential_update(
         logger.info("No new updates available.")
         if conn:
             conn.close()
-        return {"dates_processed": 0, "records_upserted": 0, "elapsed_seconds": 0}
+        return {
+            "dates_processed": 0,
+            "records_upserted": 0,
+            "elapsed_seconds": 0,
+            "last_sync_date": since,
+        }
 
     logger.info(f"Updates available: {len(new_dates)} date directories")
     logger.info(f"  From: {new_dates[0]}")
@@ -365,6 +376,7 @@ def differential_update(
         "dates_processed": len(downloaded),
         "records_upserted": total_upserted,
         "elapsed_seconds": elapsed,
+        "last_sync_date": new_dates[-1] if new_dates else since,
     }
 
 
