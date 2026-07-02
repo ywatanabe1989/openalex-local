@@ -272,7 +272,12 @@ def differential_update(
         logger.info("No new updates available.")
         if conn:
             conn.close()
-        return {"dates_processed": 0, "records_upserted": 0, "elapsed_seconds": 0}
+        return {
+            "dates_processed": 0,
+            "records_upserted": 0,
+            "elapsed_seconds": 0,
+            "last_sync_date": since,
+        }
 
     logger.info(f"Updates available: {len(new_dates)} date directories")
     logger.info(f"  From: {new_dates[0]}")
@@ -365,6 +370,7 @@ def differential_update(
         "dates_processed": len(downloaded),
         "records_upserted": total_upserted,
         "elapsed_seconds": elapsed,
+        "last_sync_date": new_dates[-1] if new_dates else since,
     }
 
 
